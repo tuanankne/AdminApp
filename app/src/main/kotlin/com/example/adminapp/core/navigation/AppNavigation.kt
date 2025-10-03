@@ -51,12 +51,6 @@ fun AppNavigation(initialRoute: String? = null) {
         }
         composable("register") {
             val authViewModel : AuthViewModel = viewModel()
-            val retrofit = Retrofit.Builder()
-                .baseUrl("https://api.mapbox.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-
-            val geocodingService = retrofit.create(MapboxGeocodingService::class.java)
             RegisterScreen(
                 onRegisterSuccess = {
                     navController.navigate("login") {
@@ -68,8 +62,7 @@ fun AppNavigation(initialRoute: String? = null) {
                         popUpTo("register") { inclusive = true }
                     }
                 },
-                viewModel = authViewModel,
-                geocodingService = geocodingService
+                viewModel = authViewModel
             )
         }
         composable("dashboard") {
