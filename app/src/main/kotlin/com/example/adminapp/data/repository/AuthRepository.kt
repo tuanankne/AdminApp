@@ -272,6 +272,24 @@ class AuthRepository {
         }
     }
 
+    suspend fun fetchCustomerById(customerId: String): Provider? {
+        return try {
+            val customers = supabase.from("users")
+                .select {
+                    filter {
+                        eq("id", customerId)
+                        eq("role", "customer")
+                    }
+                }
+                .decodeList<Provider>()
+            customers.firstOrNull()
+        } catch (e: Exception) {
+            println("Error fetching customer: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+
     suspend fun updateUserLockStatus(userId: String, newStatus: String): Boolean {
         return try {
             @Serializable

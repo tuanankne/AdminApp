@@ -14,9 +14,10 @@ import com.example.adminapp.ui.auth.RegisterScreen
 import com.example.adminapp.ui.dashboard.AdminDashboardScreen
 import com.example.adminapp.ui.provider.ProviderDetailScreen
 import com.example.adminapp.ui.provider.ProviderDetailViewModel
+import com.example.adminapp.ui.customer.CustomerDetailScreen
+import com.example.adminapp.ui.customer.CustomerDetailViewModel
 import com.example.adminapp.ui.user.UserManagementScreen
 import com.example.adminapp.ui.user.UserManagementViewModel
-import com.example.adminapp.data.model.Provider
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,6 @@ fun AppNavigation(initialRoute: String? = null) {
             val session = supabase.auth.currentSessionOrNull()
             if (session != null) {
                 // Nếu đã đăng nhập, có thể thêm logic chuyển hướng ở đây
-                // Hiện tại chỉ hiển thị màn hình đăng nhập
             }
         }
     }
@@ -43,7 +43,6 @@ fun AppNavigation(initialRoute: String? = null) {
             val authViewModel: AuthViewModel = viewModel()
             LoginScreen(
                 onLoginSuccess = {
-                    // Chuyển đến trang quản lý admin sau khi đăng nhập thành công
                     navController.navigate("dashboard") {
                         popUpTo("login") { inclusive = true }
                     }
@@ -54,6 +53,7 @@ fun AppNavigation(initialRoute: String? = null) {
                 viewModel = authViewModel
             )
         }
+        
         composable("register") {
             val authViewModel : AuthViewModel = viewModel()
             val retrofit = Retrofit.Builder()
@@ -76,6 +76,7 @@ fun AppNavigation(initialRoute: String? = null) {
                 viewModel = authViewModel,
             )
         }
+        
         composable("dashboard") {
             val authViewModel: AuthViewModel = viewModel()
             val context = LocalContext.current
@@ -95,6 +96,7 @@ fun AppNavigation(initialRoute: String? = null) {
                 }
             )
         }
+        
         composable("user_management") {
             val userManagementViewModel: UserManagementViewModel = viewModel()
             
@@ -114,7 +116,7 @@ fun AppNavigation(initialRoute: String? = null) {
                     navController.navigate("provider_detail/${provider.id}")
                 },
                 onCustomerClick = { customer ->
-                    // TODO: Implement customer detail screen if needed
+                    navController.navigate("customer_detail/${customer.id}")
                 },
                 onDeleteProvider = { providerId ->
                     userManagementViewModel.deleteProvider(providerId)
@@ -124,6 +126,7 @@ fun AppNavigation(initialRoute: String? = null) {
                 }
             )
         }
+        
         composable("provider_detail/{providerId}") { backStackEntry ->
             val providerId = backStackEntry.arguments?.getString("providerId") ?: ""
             val providerDetailViewModel: ProviderDetailViewModel = viewModel()
@@ -146,5 +149,28 @@ fun AppNavigation(initialRoute: String? = null) {
                 }
             )
         }
+        
+        composable("customer_detail/{customerId}") { backStackEntry ->
+            val customerId = backStackEntry.arguments?.getString("customerId") ?: ""
+            val customerDetailViewModel: CustomerDetailViewModel = viewModel()
+            
+            LaunchedEffect(customerId) {
+                customerDetailViewModel.loadCustomerDetail(customerId)
+            }
+            
+            CustomerDetailScreen(
+                customer = customerDetailViewModel.customer,
+                isLoading = customerDetailViewModel.isLoading,
+                error = customerDetailViewModel.error,
+                onBack = {
+                    navController.popBackStack()
+                },
+                isUpdatingLock = customerDetailViewModel.isUpdatingLock,
+                onToggleLock = {
+                    customerDetailViewModel.toggleLockStatus()
+                }
+            )
+        }
     }
 }
+
