@@ -26,6 +26,9 @@ class ProviderDetailViewModel : ViewModel() {
     var error by mutableStateOf<String?>(null)
         private set
 
+    var isUpdatingLock by mutableStateOf(false)
+        private set
+
     fun loadProviderDetail(providerId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -47,5 +50,29 @@ class ProviderDetailViewModel : ViewModel() {
             }
         }
     }
-}
 
+    fun toggleLockStatus() {
+        val currentProvider = provider ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                isUpdatingLock = true
+                val newStatus = if (currentProvider.lock == "active") "locked" else "active"
+
+                val success = authRepository.updateUserLockStatus(currentProvider.id, newStatus)
+
+                if (success) {
+                    // Refresh provider data
+                    val updatedProvider = authRepository.fetchProviderById(currentProvider.id)
+                    provider = updatedProvider
+                } else {
+                    error = "Không thể cập nhật trạng thái khóa"
+                }
+            } catch (e: Exception) {
+                error = "Lỗi khi cập nhật trạng thái: ${e.message}"
+            } finally {
+                isUpdatingLock = false
+            }
+        }
+    }
+}

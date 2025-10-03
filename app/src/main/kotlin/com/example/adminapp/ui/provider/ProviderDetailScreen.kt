@@ -32,7 +32,9 @@ fun ProviderDetailScreen(
     services: List<ProviderServiceDetail>,
     isLoading: Boolean,
     error: String?,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isUpdatingLock: Boolean = false,
+    onToggleLock: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -52,6 +54,46 @@ fun ProviderDetailScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            if (provider != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shadowElevation = 8.dp
+                ) {
+                    Button(
+                        onClick = onToggleLock,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(56.dp),
+                        enabled = !isUpdatingLock,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (provider.lock == "locked") Color(0xFF48BB78) else Color(0xFFE53E3E)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        if (isUpdatingLock) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (provider.lock == "locked") Icons.Default.LockOpen else Icons.Default.Lock,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (provider.lock == "locked") "Mở khóa tài khoản" else "Khóa tài khoản",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
         }
     ) { paddingValues ->
         if (isLoading) {
@@ -323,4 +365,3 @@ private fun ServiceItemCard(service: ProviderServiceDetail) {
         }
     }
 }
-

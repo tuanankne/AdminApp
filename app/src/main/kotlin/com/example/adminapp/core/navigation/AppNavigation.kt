@@ -139,6 +139,10 @@ fun AppNavigation(initialRoute: String? = null) {
                 error = providerDetailViewModel.error,
                 onBack = {
                     navController.popBackStack()
+                },
+                isUpdatingLock = providerDetailViewModel.isUpdatingLock,
+                onToggleLock = {
+                    providerDetailViewModel.toggleLockStatus()
                 }
             )
         }

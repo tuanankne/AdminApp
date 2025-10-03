@@ -20,7 +20,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.adminapp.data.model.Provider
 
@@ -38,15 +37,15 @@ fun UserManagementScreen(
     onDeleteCustomer: (String) -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
                         text = "Quản lý người dùng",
                         fontWeight = FontWeight.Bold
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -64,7 +63,6 @@ fun UserManagementScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Tab Row
             TabRow(
                 selectedTabIndex = selectedTab,
                 modifier = Modifier.fillMaxWidth()
@@ -82,8 +80,7 @@ fun UserManagementScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Customer") }
                 )
             }
-            
-            // Content
+
             when (selectedTab) {
                 0 -> ProviderTabContent(
                     providers = providers,
@@ -148,13 +145,15 @@ private fun ProviderTabContent(
             }
         }
     } else {
+        val sortedProviders = providers.sortedBy { it.lock == "locked" }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (providers.isEmpty()) {
+            if (sortedProviders.isEmpty()) {
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -182,7 +181,7 @@ private fun ProviderTabContent(
                     }
                 }
             } else {
-                items(providers) { provider ->
+                items(sortedProviders) { provider ->
                     UserItemCard(
                         user = provider,
                         onClick = { onProviderClick(provider) },
@@ -307,15 +306,14 @@ private fun UserItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar
             Box(
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isProvider) 
-                            MaterialTheme.colorScheme.primaryContainer 
-                        else 
+                        if (isProvider)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
                             MaterialTheme.colorScheme.secondaryContainer
                     ),
                 contentAlignment = Alignment.Center
@@ -334,17 +332,16 @@ private fun UserItemCard(
                         imageVector = if (isProvider) Icons.Default.Business else Icons.Default.Person,
                         contentDescription = "Avatar",
                         modifier = Modifier.size(30.dp),
-                        tint = if (isProvider) 
-                            MaterialTheme.colorScheme.onPrimaryContainer 
-                        else 
+                        tint = if (isProvider)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
                             MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
-            // User Info
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -352,7 +349,7 @@ private fun UserItemCard(
                     text = user.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF2D3748)
+                    color = if (user.lock == "locked") Color(0xFFE53E3E) else Color(0xFF2D3748)
                 )
                 Text(
                     text = user.email,
@@ -365,20 +362,37 @@ private fun UserItemCard(
                     color = Color(0xFF718096)
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = if (isProvider) "Nhà cung cấp" else "Khách hàng",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isProvider) Color(0xFF667eea) else Color(0xFF48BB78),
-                    fontWeight = FontWeight.Medium
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (isProvider) "Nhà cung cấp" else "Khách hàng",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isProvider) Color(0xFF667eea) else Color(0xFF48BB78),
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (user.lock == "locked") {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Đã khóa",
+                            tint = Color(0xFFE53E3E),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Đã khóa",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFFE53E3E),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
-            
-            // Action Buttons
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Delete Button
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier.size(40.dp)
@@ -390,8 +404,7 @@ private fun UserItemCard(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                
-                // Arrow Icon
+
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = "Xem chi tiết",
@@ -402,3 +415,4 @@ private fun UserItemCard(
         }
     }
 }
+

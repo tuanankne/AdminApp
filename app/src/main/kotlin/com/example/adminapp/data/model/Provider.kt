@@ -1,4 +1,3 @@
-
 package com.example.adminapp.data.model
 
 import kotlinx.serialization.SerialName
@@ -21,5 +20,7 @@ data class Provider(
     @SerialName("avatar")
     val avatar: String? = null,
     @SerialName("role")
-    val role: String? = null
+    val role: String? = null,
+    @SerialName("lock")
+    val lock: String? = "active"
 )
