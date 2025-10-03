@@ -107,6 +107,9 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.client.logging)
+    
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
     implementation(libs.ktor.client.auth)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.websockets)

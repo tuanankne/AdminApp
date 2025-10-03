@@ -18,7 +18,8 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onUserManagementClick: () -> Unit
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     
@@ -52,7 +53,6 @@ fun AdminDashboardScreen(
             item {
                 WelcomeCard()
             }
-            
             item {
                 Text(
                     text = "Chức năng quản lý",
@@ -61,13 +61,12 @@ fun AdminDashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            
-            items(getAdminFeatures()) { feature ->
+            items(getAdminFeatures(onUserManagementClick)) { feature ->
                 AdminFeatureCard(
                     title = feature.title,
                     description = feature.description,
                     icon = feature.icon,
-                    onClick = { /* TODO: Implement feature navigation */ }
+                    onClick = feature.onClick
                 )
             }
         }
@@ -174,41 +173,47 @@ private fun AdminFeatureCard(
 private data class AdminFeature(
     val title: String,
     val description: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val onClick: () -> Unit
 )
 
-private fun getAdminFeatures(): List<AdminFeature> {
+private fun getAdminFeatures(onUserManagementClick: () -> Unit): List<AdminFeature> {
     return listOf(
         AdminFeature(
             title = "Quản lý người dùng",
             description = "Xem, thêm, sửa, xóa thông tin người dùng",
-            icon = Icons.Default.People
+            icon = Icons.Default.People,
+            onClick = onUserManagementClick
         ),
         AdminFeature(
             title = "Quản lý đơn hàng",
             description = "Theo dõi và xử lý các đơn hàng",
-            icon = Icons.Default.ShoppingCart
+            icon = Icons.Default.ShoppingCart,
+            onClick = {}
         ),
         AdminFeature(
             title = "Thống kê báo cáo",
             description = "Xem các báo cáo và thống kê hệ thống",
-            icon = Icons.Default.Analytics
+            icon = Icons.Default.Analytics,
+            onClick = {}
         ),
         AdminFeature(
-            title = "Cài đặt hệ thống",
-            description = "Cấu hình các thông số hệ thống",
-            icon = Icons.Default.Settings
+            title = "Quản lý dịch vụ",
+            description = "Quản lý các dịch vụ cung cấp",
+            icon = Icons.Default.Build,
+            onClick = {}
         ),
         AdminFeature(
-            title = "Thông báo",
-            description = "Gửi thông báo đến người dùng",
-            icon = Icons.Default.Notifications
+            title = "Khuyến mại",
+            description = "Quản lý các chương trình khuyến mại",
+            icon = Icons.Default.LocalOffer,
+            onClick = {}
         ),
         AdminFeature(
             title = "Hỗ trợ",
             description = "Xem và xử lý các yêu cầu hỗ trợ",
-            icon = Icons.Default.Support
+            icon = Icons.Default.Support,
+            onClick = {}
         )
     )
 }
-

@@ -1,17 +1,11 @@
 package com.example.adminapp.ui.auth
 
-import android.Manifest
 import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Looper
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,16 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.adminapp.BuildConfig
-import com.example.adminapp.core.network.MapboxPlace
 import kotlinx.coroutines.launch
-import androidx.core.content.ContextCompat
-import com.example.adminapp.core.network.MapboxGeocodingService
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -56,47 +41,20 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     goBack: () -> Unit,
     viewModel: AuthViewModel = viewModel(),
-    geocodingService: MapboxGeocodingService
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var suggestions by remember { mutableStateOf<List<MapboxPlace>>(emptyList()) }
     var passwordVisible by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     val isValid = phoneNumber.matches(Regex("^0[0-9]{9}$"))
     val isValidEmail = email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"))
     val isLoading = viewModel.isLoading
     val authError = viewModel.authError
-
-    // Launcher để yêu cầu quyền
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            getCurrentLocationAndUpdateAddress(
-                context = context,
-                geocodingService = geocodingService,
-                accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN,
-                onAddressFound = { address = it },
-                onError = {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(it)
-                    }
-                }
-            )
-        } else {
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar("Quyền vị trí bị từ chối")
-            }
-        }
-    }
 
     // Animation states
     val alpha by animateFloatAsState(
@@ -192,69 +150,7 @@ fun RegisterScreen(
                     phoneNumber = phoneNumber,
                     onPhoneChange = { phoneNumber = it },
                     isValidPhone = isValid,
-                    address = address,
-                    onAddressChange = { newAddress ->
-                        address = newAddress
-                        coroutineScope.launch {
-                            if (newAddress.isNotEmpty()) {
-                                try {
-                                    val accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN
-                                    if (accessToken != "null" && accessToken.isNotEmpty()) {
-                                        val result = geocodingService.searchPlaces(
-                                            query = newAddress,
-                                            accessToken = accessToken
-                                        )
-                                        suggestions = result.features
-                                    } else {
-                                        snackbarHostState.showSnackbar("Chưa cấu hình MAPBOX_ACCESS_TOKEN")
-                                    }
-                                } catch (e: Exception) {
-                                    snackbarHostState.showSnackbar("Lỗi khi tìm kiếm địa chỉ: ${e.message}")
-                                }
-                            } else {
-                                suggestions = emptyList()
-                            }
-                        }
-                    },
-                    onLocationClick = {
-                        if (ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            ) == PackageManager.PERMISSION_GRANTED) {
-                            val accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN
-                            if (accessToken != "null" && accessToken.isNotEmpty()) {
-                                getCurrentLocationAndUpdateAddress(
-                                    context = context,
-                                    geocodingService = geocodingService,
-                                    accessToken = accessToken,
-                                    onAddressFound = { address = it },
-                                    onError = {
-                                        coroutineScope.launch { snackbarHostState.showSnackbar(it) }
-                                    }
-                                )
-                            } else {
-                                coroutineScope.launch { 
-                                    snackbarHostState.showSnackbar("Chưa cấu hình MAPBOX_ACCESS_TOKEN") 
-                                }
-                            }
-                        } else {
-                            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                        }
-                    }
                 )
-            }
-
-            // Address Suggestions
-            if (suggestions.isNotEmpty()) {
-                item {
-                    AddressSuggestionsSection(
-                        suggestions = suggestions,
-                        onSuggestionClick = { suggestion ->
-                            address = suggestion.placeName
-                            suggestions = emptyList()
-                        }
-                    )
-                }
             }
 
             // Error Message
@@ -268,15 +164,15 @@ fun RegisterScreen(
             item {
                 ActionButtonsSection(
                     isLoading = isLoading,
-                    isFormValid = name.isNotEmpty() && isValidEmail && password.isNotEmpty() && isValid && address.isNotEmpty(),
+                    isFormValid = name.isNotEmpty() && isValidEmail && password.isNotEmpty() && isValid,
                     onRegister = {
-                        if (email.isNotEmpty() && password.isNotEmpty()) {
+                        if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty() && phoneNumber.isNotEmpty()) {
                             viewModel.clearError()
                             coroutineScope.launch {
                                 viewModel.signUp(
                                     email = email,
                                     password = password,
-                                    address = address,
+                                    address = "Company Admin", // Địa chỉ mặc định
                                     name = name,
                                     phoneNumber = phoneNumber,
                                     onSuccess = {
@@ -285,7 +181,7 @@ fun RegisterScreen(
                                 )
                             }
                         } else {
-                            viewModel.authError = "Vui lòng nhập email và mật khẩu"
+                            viewModel.authError = "Vui lòng điền đầy đủ thông tin"
                         }
                     },
                     onGoBack = goBack
@@ -421,14 +317,11 @@ private fun ContactInfoSection(
     phoneNumber: String,
     onPhoneChange: (String) -> Unit,
     isValidPhone: Boolean,
-    address: String,
-    onAddressChange: (String) -> Unit,
-    onLocationClick: () -> Unit
 ) {
     FormCard(
         title = "Thông tin liên hệ",
         icon = Icons.Default.Phone,
-        description = "Nhập số điện thoại và địa chỉ của bạn"
+        description = "Nhập số điện thoại của bạn"
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -443,75 +336,6 @@ private fun ContactInfoSection(
                 isError = phoneNumber.isNotEmpty() && !isValidPhone,
                 supportingText = if (phoneNumber.isNotEmpty() && !isValidPhone) "Số điện thoại không hợp lệ" else null
             )
-
-            CustomTextField(
-                value = address,
-                onValueChange = onAddressChange,
-                label = "Địa chỉ",
-                icon = Icons.Default.Home,
-                placeholder = "Nhập địa chỉ của bạn",
-                trailingIcon = {
-                    IconButton(onClick = onLocationClick) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = "Tự định vị",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun AddressSuggestionsSection(
-    suggestions: List<MapboxPlace>,
-    onSuggestionClick: (MapboxPlace) -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Suggestions",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Gợi ý địa chỉ",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            suggestions.take(5).forEach { place ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSuggestionClick(place) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Text(
-                        text = place.placeName,
-                        modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
         }
     }
 }
@@ -771,72 +595,4 @@ private fun ErrorMessage(error: String) {
             )
         }
     }
-}
-
-// Keep the existing getCurrentLocationAndUpdateAddress function unchanged
-fun getCurrentLocationAndUpdateAddress(
-    context: Context,
-    geocodingService: MapboxGeocodingService,
-    accessToken: String,
-    onAddressFound: (String) -> Unit,
-    onError: (String) -> Unit
-) {
-    if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        onError("Quyền vị trí chưa được cấp.")
-        Log.d("location","Quyền vị trí chưa được cấp.")
-        return
-    }
-
-    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-    val locationRequest = LocationRequest.Builder(
-        Priority.PRIORITY_HIGH_ACCURACY,
-        1000L
-    ).build()
-
-    val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            val location = locationResult.lastLocation
-            if (location != null) {
-                fusedLocationClient.removeLocationUpdates(this)
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        val response = geocodingService.reverseGeocode(
-                            longitude = location.longitude,
-                            latitude = location.latitude,
-                            accessToken = accessToken
-                        )
-                        val placeName = response.features.firstOrNull()?.placeName
-                        withContext(Dispatchers.Main) {
-                            if (placeName != null) {
-                                onAddressFound(placeName)
-                                Log.d("location", placeName)
-                            } else {
-                                onError("Không tìm thấy địa chỉ.")
-                                Log.d("location", "Không tìm thấy địa chỉ.")
-                            }
-                        }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            onError("Lỗi reverse geocoding: ${e.message}")
-                            Log.d("location", "Lỗi reverse geocoding: ${e.message}")
-                        }
-                    }
-                }
-            } else {
-                onError("Không thể lấy vị trí hiện tại.")
-                Log.d("location", "Không thể lấy vị trí hiện tại.")
-            }
-        }
-    }
-
-    fusedLocationClient.requestLocationUpdates(
-        locationRequest,
-        locationCallback,
-        Looper.getMainLooper()
-    )
 }
