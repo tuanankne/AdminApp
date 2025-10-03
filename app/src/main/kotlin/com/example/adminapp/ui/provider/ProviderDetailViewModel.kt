@@ -33,11 +33,11 @@ class ProviderDetailViewModel : ViewModel() {
                 error = null
                 
                 // Load provider info
-                val providerData = authRepository.getProviderById(providerId)
+                val providerData = authRepository.fetchProviderById(providerId)
                 provider = providerData
                 
                 // Load provider services
-                val servicesData = authRepository.getProviderServicesDetail(providerId)
+                val servicesData = authRepository.fetchProviderServicesDetail(providerId)
                 services = servicesData
                 
             } catch (e: Exception) {
@@ -48,3 +48,4 @@ class ProviderDetailViewModel : ViewModel() {
         }
     }
 }
+

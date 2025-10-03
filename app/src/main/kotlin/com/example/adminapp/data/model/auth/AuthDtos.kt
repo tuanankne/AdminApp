@@ -12,7 +12,8 @@ class AuthDtos {
         @SerialName("phone_number")
         val phoneNumber: String,
         val role: String,
-        val address: String
+        val address: String,
+        val lock: String // Thêm trường lock
     )
     @Serializable
     data class UserSignIn(

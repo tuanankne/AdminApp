@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.adminapp.data.model.Provider
 import com.example.adminapp.data.model.ProviderServiceDetail
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -221,13 +222,13 @@ private fun ProviderInfoCard(provider: Provider) {
             InfoRow(
                 icon = Icons.Default.LocationOn,
                 label = "Địa chỉ",
-                value = provider.address
+                value = provider.address ?: "Chưa cập nhật"
             )
             
             InfoRow(
                 icon = Icons.Default.Phone,
                 label = "Số điện thoại",
-                value = provider.phoneNumber
+                value = provider.phoneNumber ?: "Chưa cập nhật"
             )
             
             InfoRow(
@@ -298,13 +299,13 @@ private fun ServiceItemCard(service: ProviderServiceDetail) {
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = service.serviceTypeName,
+                    text = service.services.serviceTypes.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF2D3748)
                 )
                 Text(
-                    text = service.serviceName,
+                    text = service.services.name,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF4A5568)
                 )
@@ -313,7 +314,7 @@ private fun ServiceItemCard(service: ProviderServiceDetail) {
             Spacer(modifier = Modifier.width(16.dp))
             
             Text(
-                text = "Giá dịch vụ: ${String.format("%.0f", service.customPrice)} VNĐ",
+                text = "Giá dịch vụ: ${String.format(Locale.US, "%.0f", service.customPrice)} VNĐ",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF667eea),
@@ -322,3 +323,4 @@ private fun ServiceItemCard(service: ProviderServiceDetail) {
         }
     }
 }
+

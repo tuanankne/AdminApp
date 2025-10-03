@@ -360,7 +360,7 @@ private fun UserItemCard(
                     color = Color(0xFF4A5568)
                 )
                 Text(
-                    text = user.phoneNumber,
+                    text = user.phoneNumber ?: "Chưa cập nhật",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF718096)
                 )

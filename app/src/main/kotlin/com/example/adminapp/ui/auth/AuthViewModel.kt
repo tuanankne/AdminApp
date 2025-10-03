@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import com.example.adminapp.core.supabase
 import android.util.Log
 import androidx.core.content.edit
-import com.example.adminapp.data.model.auth.UsersSignUp
+import com.example.adminapp.data.model.auth.AuthDtos
 import com.example.adminapp.data.repository.AuthRepository
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.auth.auth
@@ -79,7 +79,7 @@ class AuthViewModel : ViewModel() {
                 val role = "admin"
                 val check = countUsersByEmail(email)
                 if (check == 0){
-                    val newUser = UsersSignUp(
+                    val newUser = AuthDtos.UsersSignUp(
                         email = email,
                         password = password,
                         role = role,

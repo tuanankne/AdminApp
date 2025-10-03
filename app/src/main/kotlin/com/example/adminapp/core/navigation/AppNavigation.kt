@@ -12,6 +12,11 @@ import com.example.adminapp.core.supabase
 import com.example.adminapp.ui.auth.LoginScreen
 import com.example.adminapp.ui.auth.RegisterScreen
 import com.example.adminapp.ui.dashboard.AdminDashboardScreen
+import com.example.adminapp.ui.provider.ProviderDetailScreen
+import com.example.adminapp.ui.provider.ProviderDetailViewModel
+import com.example.adminapp.ui.user.UserManagementScreen
+import com.example.adminapp.ui.user.UserManagementViewModel
+import com.example.adminapp.data.model.Provider
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +74,6 @@ fun AppNavigation(initialRoute: String? = null) {
                     }
                 },
                 viewModel = authViewModel,
-                geocodingService = geocodingService
             )
         }
         composable("dashboard") {
@@ -85,6 +89,56 @@ fun AppNavigation(initialRoute: String? = null) {
                             }
                         }
                     )
+                },
+                onUserManagementClick = {
+                    navController.navigate("user_management")
+                }
+            )
+        }
+        composable("user_management") {
+            val userManagementViewModel: UserManagementViewModel = viewModel()
+            
+            LaunchedEffect(Unit) {
+                userManagementViewModel.loadUsers()
+            }
+            
+            UserManagementScreen(
+                providers = userManagementViewModel.providers,
+                customers = userManagementViewModel.customers,
+                isLoading = userManagementViewModel.isLoading,
+                error = userManagementViewModel.error,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onProviderClick = { provider ->
+                    navController.navigate("provider_detail/${provider.id}")
+                },
+                onCustomerClick = { customer ->
+                    // TODO: Implement customer detail screen if needed
+                },
+                onDeleteProvider = { providerId ->
+                    userManagementViewModel.deleteProvider(providerId)
+                },
+                onDeleteCustomer = { customerId ->
+                    userManagementViewModel.deleteCustomer(customerId)
+                }
+            )
+        }
+        composable("provider_detail/{providerId}") { backStackEntry ->
+            val providerId = backStackEntry.arguments?.getString("providerId") ?: ""
+            val providerDetailViewModel: ProviderDetailViewModel = viewModel()
+            
+            LaunchedEffect(providerId) {
+                providerDetailViewModel.loadProviderDetail(providerId)
+            }
+            
+            ProviderDetailScreen(
+                provider = providerDetailViewModel.provider,
+                services = providerDetailViewModel.services,
+                isLoading = providerDetailViewModel.isLoading,
+                error = providerDetailViewModel.error,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
