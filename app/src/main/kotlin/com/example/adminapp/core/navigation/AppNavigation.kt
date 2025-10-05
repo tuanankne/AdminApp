@@ -18,6 +18,8 @@ import com.example.adminapp.ui.customer.CustomerDetailScreen
 import com.example.adminapp.ui.customer.CustomerDetailViewModel
 import com.example.adminapp.ui.user.UserManagementScreen
 import com.example.adminapp.ui.user.UserManagementViewModel
+import com.example.adminapp.ui.order.OrderListScreen
+import com.example.adminapp.ui.order.OrderManagementScreen
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +95,9 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onUserManagementClick = {
                     navController.navigate("user_management")
+                },
+                onOrderManagementClick = {
+                    navController.navigate("order_management")
                 }
             )
         }
@@ -123,6 +128,27 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onDeleteCustomer = { customerId ->
                     userManagementViewModel.deleteCustomer(customerId)
+                }
+            )
+        }
+        
+        composable("order_management") {
+            OrderListScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onOrderClick = { orderId ->
+                    navController.navigate("order_detail/$orderId")
+                }
+            )
+        }
+        
+        composable("order_detail/{orderId}") { backStackEntry ->
+            val orderId = backStackEntry.arguments?.getString("orderId")?.toLongOrNull() ?: 0L
+            OrderManagementScreen(
+                orderId = orderId,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }
