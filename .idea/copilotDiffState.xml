@@ -3,15 +3,6 @@
   <component name="CopilotDiffPersistence">
     <option name="pendingDiffs">
       <map>
-        <entry key="$PROJECT_DIR$/app/src/main/kotlin/com/example/adminapp/data/model/ProviderServiceDetail.kt">
-          <value>
-            <PendingDiffInfo>
-              <option name="filePath" value="$PROJECT_DIR$/app/src/main/kotlin/com/example/adminapp/data/model/ProviderServiceDetail.kt" />
-              <option name="originalContent" value="package com.example.adminapp.data.model&#10;&#10;import kotlinx.serialization.SerialName&#10;import kotlinx.serialization.Serializable&#10;&#10;@Serializable&#10;data class ProviderServiceDetail(&#10;    @SerialName(&quot;provider_id&quot;)&#10;    val providerId: String,&#10;    @SerialName(&quot;custom_price&quot;)&#10;    val customPrice: Double,&#10;    @SerialName(&quot;services&quot;)&#10;    val services: Service&#10;)&#10;&#10;@Serializable&#10;data class Service(&#10;    val id: String,&#10;    val name: String,&#10;    @SerialName(&quot;service_types&quot;)&#10;    val serviceTypes: ServiceType,&#10;    @SerialName(&quot;service_type_id&quot;)&#10;    val serviceTypeId: String&#10;)&#10;&#10;@Serializable&#10;data class ServiceType(&#10;    val id: String,&#10;    val name: String&#10;)&#10;" />
-              <option name="updatedContent" value="package com.example.adminapp.data.model&#10;&#10;import kotlinx.serialization.SerialName&#10;import kotlinx.serialization.Serializable&#10;&#10;@Serializable&#10;data class ProviderServiceDetail(&#10;    @SerialName(&quot;id&quot;)&#10;    val id: String,&#10;    @SerialName(&quot;provider_id&quot;)&#10;    val providerId: String,&#10;    @SerialName(&quot;service_id&quot;)&#10;    val serviceId: String,&#10;    @SerialName(&quot;custom_price&quot;)&#10;    val customPrice: Double,&#10;    @SerialName(&quot;services&quot;)&#10;    val services: Service&#10;)&#10;&#10;@Serializable&#10;data class Service(&#10;    @SerialName(&quot;id&quot;)&#10;    val id: String,&#10;    @SerialName(&quot;name&quot;)&#10;    val name: String,&#10;    @SerialName(&quot;service_type_id&quot;)&#10;    val serviceTypeId: String,&#10;    @SerialName(&quot;service_types&quot;)&#10;    val serviceTypes: ServiceType&#10;)&#10;&#10;@Serializable&#10;data class ServiceType(&#10;    @SerialName(&quot;id&quot;)&#10;    val id: String,&#10;    @SerialName(&quot;name&quot;)&#10;    val name: String&#10;)" />
-            </PendingDiffInfo>
-          </value>
-        </entry>
         <entry key="$PROJECT_DIR$/app/src/main/kotlin/com/example/adminapp/data/model/auth/AuthDtos.kt">
           <value>
             <PendingDiffInfo>

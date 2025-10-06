@@ -23,6 +23,7 @@ import com.example.adminapp.ui.order.OrderManagementScreen
 import com.example.adminapp.ui.statistics.StatisticsScreen
 import com.example.adminapp.ui.service.ServiceManagementScreen
 import com.example.adminapp.ui.service.ServiceDetailScreen
+import com.example.adminapp.ui.voucher.VoucherManagementScreen
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -107,6 +108,9 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onServiceManagementClick = {
                     navController.navigate("service_management")
+                },
+                onVoucherManagementClick = {
+                    navController.navigate("voucher_management")
                 }
             )
         }
@@ -187,6 +191,14 @@ fun AppNavigation(initialRoute: String? = null) {
             ServiceDetailScreen(
                 serviceTypeId = typeId,
                 serviceTypeName = typeName,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable("voucher_management") {
+            VoucherManagementScreen(
                 onBack = {
                     navController.popBackStack()
                 }

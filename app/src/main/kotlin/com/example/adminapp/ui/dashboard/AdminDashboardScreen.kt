@@ -22,7 +22,8 @@ fun AdminDashboardScreen(
     onUserManagementClick: () -> Unit,
     onOrderManagementClick: () -> Unit,
     onStatisticsClick: () -> Unit = {},
-    onServiceManagementClick: () -> Unit = {}
+    onServiceManagementClick: () -> Unit = {},
+    onVoucherManagementClick: () -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     
@@ -64,7 +65,7 @@ fun AdminDashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick, onServiceManagementClick)) { feature ->
+            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick, onServiceManagementClick, onVoucherManagementClick)) { feature ->
                 AdminFeatureCard(
                     title = feature.title,
                     description = feature.description,
@@ -184,7 +185,8 @@ private fun getAdminFeatures(
     onUserManagementClick: () -> Unit,
     onOrderManagementClick: () -> Unit,
     onStatisticsClick: () -> Unit,
-    onServiceManagementClick: () -> Unit
+    onServiceManagementClick: () -> Unit,
+    onVoucherManagementClick: () -> Unit
 ): List<AdminFeature> {
     return listOf(
         AdminFeature(
@@ -215,7 +217,7 @@ private fun getAdminFeatures(
             title = "Khuyến mại",
             description = "Quản lý các chương trình khuyến mại",
             icon = Icons.Default.LocalOffer,
-            onClick = {}
+            onClick = onVoucherManagementClick
         ),
         AdminFeature(
             title = "Hỗ trợ",
