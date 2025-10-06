@@ -37,7 +37,9 @@ class AuthRepository {
     @Serializable
     data class ServiceTypeRow(
         val id: Int,
-        val name: String
+        val name: String,
+        val icon_url: String? = null,
+        val is_active: Boolean = true
     )
 
     suspend fun countAdminUsersByEmail(email: String): Int {
@@ -169,7 +171,7 @@ class AuthRepository {
 
                     // Bước 3: Lấy thông tin service_type từ service_type_id
                     val serviceTypes = supabase.from("service_types")
-                        .select(columns = Columns.list("id", "name")) {
+                        .select(columns = Columns.list("id", "name", "icon_url", "is_active")) {
                             filter {
                                 eq("id", service.service_type_id)
                             }
@@ -186,8 +188,10 @@ class AuthRepository {
 
                     // Tạo các đối tượng
                     val serviceTypeObj = ServiceType(
-                        id = serviceType.id.toString(),
-                        name = serviceType.name
+                        id = serviceType.id.toLong(),
+                        name = serviceType.name,
+                        iconUrl = serviceType.icon_url,
+                        isActive = serviceType.is_active
                     )
 
                     val serviceObj = Service(

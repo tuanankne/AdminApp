@@ -21,7 +21,8 @@ fun AdminDashboardScreen(
     onLogout: () -> Unit,
     onUserManagementClick: () -> Unit,
     onOrderManagementClick: () -> Unit,
-    onStatisticsClick: () -> Unit = {}
+    onStatisticsClick: () -> Unit = {},
+    onServiceManagementClick: () -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     
@@ -63,7 +64,7 @@ fun AdminDashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick)) { feature ->
+            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick, onServiceManagementClick)) { feature ->
                 AdminFeatureCard(
                     title = feature.title,
                     description = feature.description,
@@ -182,7 +183,8 @@ private data class AdminFeature(
 private fun getAdminFeatures(
     onUserManagementClick: () -> Unit,
     onOrderManagementClick: () -> Unit,
-    onStatisticsClick: () -> Unit
+    onStatisticsClick: () -> Unit,
+    onServiceManagementClick: () -> Unit
 ): List<AdminFeature> {
     return listOf(
         AdminFeature(
@@ -207,7 +209,7 @@ private fun getAdminFeatures(
             title = "Quản lý dịch vụ",
             description = "Quản lý các dịch vụ cung cấp",
             icon = Icons.Default.Build,
-            onClick = {}
+            onClick = onServiceManagementClick
         ),
         AdminFeature(
             title = "Khuyến mại",

@@ -155,7 +155,7 @@ class OrderRepository {
                                 name = service.name,
                                 serviceTypeId = "1",  // Default for now
                                 serviceTypes = ServiceType(
-                                    id = "1",
+                                    id = 1L,
                                     name = "Default"
                                 )
                             )

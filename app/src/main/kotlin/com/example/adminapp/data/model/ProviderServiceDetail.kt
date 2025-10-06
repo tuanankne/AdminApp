@@ -32,7 +32,13 @@ data class Service(
 @Serializable
 data class ServiceType(
     @SerialName("id")
-    val id: String,
+    val id: Long,
     @SerialName("name")
-    val name: String
+    val name: String,
+    @SerialName("description")
+    val description: String? = null,
+    @SerialName("icon_url")
+    val iconUrl: String? = null,
+    @SerialName("is_active")
+    val isActive: Boolean = true
 )

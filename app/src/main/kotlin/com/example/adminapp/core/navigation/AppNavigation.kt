@@ -21,6 +21,8 @@ import com.example.adminapp.ui.user.UserManagementViewModel
 import com.example.adminapp.ui.order.OrderListScreen
 import com.example.adminapp.ui.order.OrderManagementScreen
 import com.example.adminapp.ui.statistics.StatisticsScreen
+import com.example.adminapp.ui.service.ServiceManagementScreen
+import com.example.adminapp.ui.service.ServiceDetailScreen
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -102,6 +104,9 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onStatisticsClick = {
                     navController.navigate("statistics")
+                },
+                onServiceManagementClick = {
+                    navController.navigate("service_management")
                 }
             )
         }
@@ -159,6 +164,29 @@ fun AppNavigation(initialRoute: String? = null) {
         
         composable("statistics") {
             StatisticsScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable("service_management") {
+            ServiceManagementScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onServiceTypeClick = { typeId, typeName ->
+                    navController.navigate("service_detail/$typeId/$typeName")
+                }
+            )
+        }
+        
+        composable("service_detail/{typeId}/{typeName}") { backStackEntry ->
+            val typeId = backStackEntry.arguments?.getString("typeId")?.toLongOrNull() ?: 0L
+            val typeName = backStackEntry.arguments?.getString("typeName") ?: ""
+            ServiceDetailScreen(
+                serviceTypeId = typeId,
+                serviceTypeName = typeName,
                 onBack = {
                     navController.popBackStack()
                 }
