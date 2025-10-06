@@ -1,8 +1,10 @@
 package com.example.adminapp.ui.dashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -10,10 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,9 +28,17 @@ fun AdminDashboardScreen(
     onOrderManagementClick: () -> Unit,
     onStatisticsClick: () -> Unit = {},
     onServiceManagementClick: () -> Unit = {},
-    onVoucherManagementClick: () -> Unit = {}
+    onVoucherManagementClick: () -> Unit = {},
+    onReportManagementClick: () -> Unit = {},
+    viewModel: DashboardViewModel = viewModel()
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val pendingReportsCount by viewModel.pendingReportsCount.collectAsState()
+    
+    // Refresh data when screen appears
+    LaunchedEffect(Unit) {
+        viewModel.refreshData()
+    }
     
     Scaffold(
         topBar = {
@@ -65,12 +78,13 @@ fun AdminDashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick, onServiceManagementClick, onVoucherManagementClick)) { feature ->
+            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick, onServiceManagementClick, onVoucherManagementClick, onReportManagementClick)) { feature ->
                 AdminFeatureCard(
                     title = feature.title,
                     description = feature.description,
                     icon = feature.icon,
-                    onClick = feature.onClick
+                    onClick = feature.onClick,
+                    badgeCount = if (feature.title == "Hỗ trợ") pendingReportsCount else null
                 )
             }
         }
@@ -131,7 +145,8 @@ private fun AdminFeatureCard(
     title: String,
     description: String,
     icon: ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    badgeCount: Int? = null
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -143,21 +158,51 @@ private fun AdminFeatureCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = title,
-                modifier = Modifier.size(40.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Box {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                // Badge số đỏ
+                if (badgeCount != null && badgeCount > 0) {
+                    Box(
+                        modifier = Modifier
+                            .offset(x = 28.dp, y = (-8).dp)
+                            .size(20.dp)
+                            .background(Color.Red, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (badgeCount > 99) "99+" else badgeCount.toString(),
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (badgeCount != null && badgeCount > 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "($badgeCount chưa xử lý)",
+                            fontSize = 12.sp,
+                            color = Color.Red,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = description,
@@ -186,7 +231,8 @@ private fun getAdminFeatures(
     onOrderManagementClick: () -> Unit,
     onStatisticsClick: () -> Unit,
     onServiceManagementClick: () -> Unit,
-    onVoucherManagementClick: () -> Unit
+    onVoucherManagementClick: () -> Unit,
+    onReportManagementClick: () -> Unit
 ): List<AdminFeature> {
     return listOf(
         AdminFeature(
@@ -221,9 +267,9 @@ private fun getAdminFeatures(
         ),
         AdminFeature(
             title = "Hỗ trợ",
-            description = "Xem và xử lý các yêu cầu hỗ trợ",
+            description = "Xem và xử lý các báo cáo hỗ trợ",
             icon = Icons.Default.Support,
-            onClick = {}
+            onClick = onReportManagementClick
         )
     )
 }

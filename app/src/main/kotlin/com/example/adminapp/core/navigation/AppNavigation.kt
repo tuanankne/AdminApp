@@ -12,6 +12,7 @@ import com.example.adminapp.core.supabase
 import com.example.adminapp.ui.auth.LoginScreen
 import com.example.adminapp.ui.auth.RegisterScreen
 import com.example.adminapp.ui.dashboard.AdminDashboardScreen
+import com.example.adminapp.ui.dashboard.DashboardViewModel
 import com.example.adminapp.ui.provider.ProviderDetailScreen
 import com.example.adminapp.ui.provider.ProviderDetailViewModel
 import com.example.adminapp.ui.customer.CustomerDetailScreen
@@ -24,6 +25,10 @@ import com.example.adminapp.ui.statistics.StatisticsScreen
 import com.example.adminapp.ui.service.ServiceManagementScreen
 import com.example.adminapp.ui.service.ServiceDetailScreen
 import com.example.adminapp.ui.voucher.VoucherManagementScreen
+import com.example.adminapp.ui.report.ReportManagementScreen
+import com.example.adminapp.ui.reports.ReportDetailScreen
+import com.example.adminapp.ui.report.ReportManagementViewModel
+import com.example.adminapp.data.model.ReportWithUser
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -85,6 +90,7 @@ fun AppNavigation(initialRoute: String? = null) {
         
         composable("dashboard") {
             val authViewModel: AuthViewModel = viewModel()
+            val dashboardViewModel: DashboardViewModel = viewModel()
             val context = LocalContext.current
             AdminDashboardScreen(
                 onLogout = {
@@ -111,7 +117,11 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onVoucherManagementClick = {
                     navController.navigate("voucher_management")
-                }
+                },
+                onReportManagementClick = {
+                    navController.navigate("report_management")
+                },
+                viewModel = dashboardViewModel
             )
         }
         
@@ -203,6 +213,32 @@ fun AppNavigation(initialRoute: String? = null) {
                     navController.popBackStack()
                 }
             )
+        }
+        
+        composable("report_management") {
+            ReportManagementScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onReportClick = { reportWithUser ->
+                    // Lưu report data tạm thời để truyền sang màn hình detail
+                    navController.currentBackStackEntry?.savedStateHandle?.set("reportWithUser", reportWithUser)
+                    navController.navigate("report_detail")
+                }
+            )
+        }
+        
+        composable("report_detail") {
+            val reportWithUser = navController.previousBackStackEntry?.savedStateHandle?.get<ReportWithUser>("reportWithUser")
+            
+            if (reportWithUser != null) {
+                ReportDetailScreen(
+                    reportWithUser = reportWithUser,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
         }
         
         composable("provider_detail/{providerId}") { backStackEntry ->
