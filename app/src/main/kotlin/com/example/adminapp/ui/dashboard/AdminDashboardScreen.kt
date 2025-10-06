@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.sp
 fun AdminDashboardScreen(
     onLogout: () -> Unit,
     onUserManagementClick: () -> Unit,
-    onOrderManagementClick: () -> Unit
+    onOrderManagementClick: () -> Unit,
+    onStatisticsClick: () -> Unit = {}
 ) {
     var showLogoutDialog by remember { mutableStateOf(false) }
     
@@ -62,7 +63,7 @@ fun AdminDashboardScreen(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick)) { feature ->
+            items(getAdminFeatures(onUserManagementClick, onOrderManagementClick, onStatisticsClick)) { feature ->
                 AdminFeatureCard(
                     title = feature.title,
                     description = feature.description,
@@ -180,7 +181,8 @@ private data class AdminFeature(
 
 private fun getAdminFeatures(
     onUserManagementClick: () -> Unit,
-    onOrderManagementClick: () -> Unit
+    onOrderManagementClick: () -> Unit,
+    onStatisticsClick: () -> Unit
 ): List<AdminFeature> {
     return listOf(
         AdminFeature(
@@ -199,7 +201,7 @@ private fun getAdminFeatures(
             title = "Thống kê báo cáo",
             description = "Xem các báo cáo và thống kê hệ thống",
             icon = Icons.Default.Analytics,
-            onClick = {}
+            onClick = onStatisticsClick
         ),
         AdminFeature(
             title = "Quản lý dịch vụ",

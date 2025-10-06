@@ -20,6 +20,7 @@ import com.example.adminapp.ui.user.UserManagementScreen
 import com.example.adminapp.ui.user.UserManagementViewModel
 import com.example.adminapp.ui.order.OrderListScreen
 import com.example.adminapp.ui.order.OrderManagementScreen
+import com.example.adminapp.ui.statistics.StatisticsScreen
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -98,6 +99,9 @@ fun AppNavigation(initialRoute: String? = null) {
                 },
                 onOrderManagementClick = {
                     navController.navigate("order_management")
+                },
+                onStatisticsClick = {
+                    navController.navigate("statistics")
                 }
             )
         }
@@ -147,6 +151,14 @@ fun AppNavigation(initialRoute: String? = null) {
             val orderId = backStackEntry.arguments?.getString("orderId")?.toLongOrNull() ?: 0L
             OrderManagementScreen(
                 orderId = orderId,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        
+        composable("statistics") {
+            StatisticsScreen(
                 onBack = {
                     navController.popBackStack()
                 }
