@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
@@ -44,6 +46,8 @@ fun ReportDetailScreen(
     val reports by viewModel.reports.collectAsState()
     var showResponseDialog by remember { mutableStateOf(false) }
     var responseText by remember { mutableStateOf("") }
+    var showImageDialog by remember { mutableStateOf(false) }
+    var selectedImageUrl by remember { mutableStateOf("") }
     
     // Get updated report from reports list
     val updatedReport = reports.find { it.report.id == reportWithUser.report.id } ?: reportWithUser
@@ -98,7 +102,13 @@ fun ReportDetailScreen(
             
             // Images Card (if available)
             updatedReport.report.imageUrls?.let { imageUrls ->
-                ImagesCard(imageUrls)
+                ImagesCard(
+                    imageUrls = imageUrls,
+                    onImageClick = { url ->
+                        selectedImageUrl = url
+                        showImageDialog = true
+                    }
+                )
             }
             
             // Admin Response Card (if available)
@@ -129,6 +139,14 @@ fun ReportDetailScreen(
                 showResponseDialog = false
                 responseText = ""
             }
+        )
+    }
+    
+    // Image Viewer Dialog
+    if (showImageDialog) {
+        ImageViewerDialog(
+            imageUrl = selectedImageUrl,
+            onDismiss = { showImageDialog = false }
         )
     }
 }
@@ -332,39 +350,63 @@ private fun ReportContentCard(report: com.example.adminapp.data.model.Report) {
 }
 
 @Composable
-private fun ImagesCard(imageUrls: String) {
+private fun ImagesCard(
+    imageUrls: String,
+    onImageClick: (String) -> Unit = {}
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Parse JSON array from Supabase
+            val urls = try {
+                if (imageUrls.startsWith("[") && imageUrls.endsWith("]")) {
+                    // Handle JSON array format: ["url1","url2","url3"]
+                    imageUrls
+                        .removePrefix("[")
+                        .removeSuffix("]")
+                        .split("\",\"")
+                        .map { it.replace("\"", "").trim() }
+                        .filter { it.isNotEmpty() }
+                } else {
+                    // Handle simple comma-separated format
+                    imageUrls.split(",", ";", "|").map { it.trim() }.filter { it.isNotEmpty() }
+                }
+            } catch (e: Exception) {
+                // Fallback to simple comma splitting if JSON parsing fails
+                imageUrls.split(",", ";", "|").map { it.trim() }.filter { it.isNotEmpty() }
+            }
+            
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Icon(Icons.Default.Image, contentDescription = null)
                 Text(
-                    text = "Hình ảnh đính kèm",
+                    text = "Hình ảnh đính kèm (${urls.size})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
             }
             
-            // Parse multiple URLs if separated by comma or other delimiter
-            val urls = imageUrls.split(",", ";", "|").map { it.trim() }.filter { it.isNotEmpty() }
-            
             if (urls.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     urls.forEach { url ->
-                        AsyncImage(
-                            model = url,
-                            contentDescription = "Report Image",
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(180.dp)
                                 .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                            onClick = { onImageClick(url) }
+                        ) {
+                            AsyncImage(
+                                model = url,
+                                contentDescription = "Report Image",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
             } else {
@@ -528,6 +570,41 @@ private fun formatDateTime(dateTimeString: String?): String {
             outputFormat.format(date ?: Date())
         } catch (e2: Exception) {
             dateTimeString // Return original if can't parse
+        }
+    }
+}
+
+@Composable
+private fun ImageViewerDialog(
+    imageUrl: String,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Box {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Full Image",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+                
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Đóng",
+                        tint = Color.White
+                    )
+                }
+            }
         }
     }
 }
