@@ -93,8 +93,11 @@ fun ReportDetailScreen(
             }
             
             // Provider Info Card (if available)
-            updatedReport.providerName?.let {
-                ProviderInfoCard(it)
+            updatedReport.report.providerId?.let { providerId ->
+                ProviderInfoCard(
+                    providerId = providerId,
+                    providerName = updatedReport.providerName
+                )
             }
             
             // Report Content Card
@@ -249,7 +252,10 @@ private fun CustomerInfoCard(reportWithUser: ReportWithUser) {
 }
 
 @Composable
-private fun ProviderInfoCard(providerName: String) {
+private fun ProviderInfoCard(
+    providerId: String,
+    providerName: String?
+) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -267,10 +273,42 @@ private fun ProviderInfoCard(providerName: String) {
                 )
             }
             
-            Text(
-                text = providerName,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            // Provider ID
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "ID:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = providerId,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                )
+            }
+            
+            // Provider Name (if available)
+            providerName?.let { name ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Tên:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
         }
     }
 }
