@@ -31,11 +31,11 @@ class UserManagementViewModel : ViewModel() {
                 isLoading = true
                 error = null
                 
-                // Load providers
+                // Tải danh sách nhà cung cấp
                 val providersData = authRepository.getProviders()
                 providers = providersData
                 
-                // Load customers
+                // Tải danh sách khách hàng
                 val customersData = authRepository.getCustomers()
                 customers = customersData
                 
@@ -52,7 +52,7 @@ class UserManagementViewModel : ViewModel() {
             try {
                 val success = authRepository.deleteUser(providerId)
                 if (success) {
-                    // Reload data
+                    // Tải lại dữ liệu
                     loadUsers()
                 } else {
                     error = "Không thể xóa nhà cung cấp"
@@ -68,7 +68,7 @@ class UserManagementViewModel : ViewModel() {
             try {
                 val success = authRepository.deleteUser(customerId)
                 if (success) {
-                    // Reload data
+                    // Tải lại dữ liệu
                     loadUsers()
                 } else {
                     error = "Không thể xóa khách hàng"

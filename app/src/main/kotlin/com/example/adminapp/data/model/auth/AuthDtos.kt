@@ -13,7 +13,7 @@ class AuthDtos {
         val phoneNumber: String,
         val role: String,
         val address: String,
-        val lock: String // Thêm trường lock
+        val lock: String // Thêm trường trạng thái khóa
     )
     @Serializable
     data class UserSignIn(

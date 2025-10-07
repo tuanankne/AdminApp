@@ -41,32 +41,32 @@ class OrderListViewModel : ViewModel() {
                 isLoading = true
                 error = null
                 
-                println("=== Starting to load orders ===")
+                println("=== Bắt đầu tải đơn hàng ===")
                 
-                // Load bookings và customers
+                // Tải đơn hàng và khách hàng
                 val bookings = orderRepository.getBookings()
-                println("Loaded ${bookings.size} bookings")
+                println("Đã tải ${bookings.size} đơn hàng")
                 
                 val customers = orderRepository.getCustomers()
-                println("Loaded ${customers.size} customers")
+                println("Đã tải ${customers.size} khách hàng")
                 
-                // Debug: Print first few bookings
+                // Debug: In ra vài đơn hàng đầu tiên
                 bookings.take(3).forEach { booking ->
-                    println("Booking: id=${booking.id}, customerId=${booking.customerId}")
+                    println("Đơn hàng: id=${booking.id}, customerId=${booking.customerId}")
                 }
                 
-                // Tạo map để lookup customer
+                // Tạo map để tra cứu khách hàng
                 val customerMap = customers.associateBy { it.id }
-                println("Customer map has ${customerMap.size} entries")
+                println("Map khách hàng có ${customerMap.size} mục")
                 
                 // Tạo danh sách đơn giản chỉ có ID, tên người đặt và trạng thái
                 val orderItems = bookings.mapNotNull { booking ->
-                    // Skip nếu customerId null
+                    // Bỏ qua nếu customerId null
                     val customerId = booking.customerId ?: return@mapNotNull null
                     
                     val customer = customerMap[customerId]
                     val customerName = customer?.name ?: customer?.email ?: "Không rõ"
-                    println("Mapping booking ${booking.id} -> customer: $customerName (customerId: $customerId), status: ${booking.status}")
+                    println("Ánh xạ đơn hàng ${booking.id} -> khách hàng: $customerName (customerId: $customerId), trạng thái: ${booking.status}")
                     
                     OrderListItem(
                         bookingId = booking.id,
@@ -82,12 +82,12 @@ class OrderListViewModel : ViewModel() {
                 val completedOrders = orderItems.count { it.status == "completed" }
                 statistics = OrderStatistics(totalOrders, completedOrders)
                 
-                println("Final orders list size: ${orders.size}")
-                println("Statistics: Total=$totalOrders, Completed=$completedOrders")
+                println("Kích thước danh sách đơn hàng cuối cùng: ${orders.size}")
+                println("Thống kê: Tổng=$totalOrders, Hoàn thành=$completedOrders")
                 
             } catch (e: Exception) {
                 error = "Lỗi khi tải danh sách đơn hàng: ${e.message}"
-                println("Error loading orders: ${e.message}")
+                println("Lỗi khi tải đơn hàng: ${e.message}")
                 e.printStackTrace()
             } finally {
                 isLoading = false
@@ -101,30 +101,30 @@ class OrderListViewModel : ViewModel() {
                 isLoading = true
                 error = null
                 
-                println("=== Starting to load orders for provider: $providerId ===")
+                println("=== Bắt đầu tải đơn hàng cho nhà cung cấp: $providerId ===")
                 
-                // Load bookings và customers
+                // Tải đơn hàng và khách hàng
                 val bookings = orderRepository.getBookings()
-                println("Loaded ${bookings.size} bookings")
+                println("Đã tải ${bookings.size} đơn hàng")
                 
                 val customers = orderRepository.getCustomers()
-                println("Loaded ${customers.size} customers")
+                println("Đã tải ${customers.size} khách hàng")
                 
-                // Lấy provider services để filter bookings
+                // Lấy dịch vụ nhà cung cấp để lọc đơn hàng
                 val providerServices = orderRepository.getProviderServices(providerId)
-                println("Found ${providerServices.size} provider services for provider $providerId")
+                println("Tìm thấy ${providerServices.size} dịch vụ nhà cung cấp cho nhà cung cấp $providerId")
                 
                 val providerServiceIds = providerServices.map { it.id }
                 
-                // Tạo map để lookup customer
+                // Tạo map để tra cứu khách hàng
                 val customerMap = customers.associateBy { it.id }
                 
-                // Filter bookings theo provider service IDs
+                // Lọc đơn hàng theo ID dịch vụ nhà cung cấp
                 val filteredBookings = bookings.filter { booking ->
                     providerServiceIds.contains(booking.providerServiceId)
                 }
                 
-                println("Filtered to ${filteredBookings.size} bookings for this provider")
+                println("Đã lọc thành ${filteredBookings.size} đơn hàng cho nhà cung cấp này")
                 
                 // Tạo danh sách đơn giản chỉ có ID, tên người đặt và trạng thái
                 val orderItems = filteredBookings.mapNotNull { booking ->
@@ -147,12 +147,12 @@ class OrderListViewModel : ViewModel() {
                 val completedOrders = orderItems.count { it.status == "completed" }
                 statistics = OrderStatistics(totalOrders, completedOrders)
                 
-                println("Final filtered orders list size: ${orders.size}")
-                println("Statistics: Total=$totalOrders, Completed=$completedOrders")
+                println("Kích thước danh sách đơn hàng đã lọc cuối cùng: ${orders.size}")
+                println("Thống kê: Tổng=$totalOrders, Hoàn thành=$completedOrders")
                 
             } catch (e: Exception) {
                 error = "Lỗi khi tải đơn hàng: ${e.message}"
-                println("Error loading orders by provider: ${e.message}")
+                println("Lỗi khi tải đơn hàng theo nhà cung cấp: ${e.message}")
                 e.printStackTrace()
             } finally {
                 isLoading = false

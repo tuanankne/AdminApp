@@ -79,25 +79,25 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     private fun showNotification(title: String, body: String) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Tạo notification channel với importance cao để đảm bảo hiển thị
+        // Tạo kênh thông báo với mức độ quan trọng cao để đảm bảo hiển thị
         val channelId = "fcm_default_channel"
-        val channelName = "Push Notifications"
+        val channelName = "Thông báo đẩy"
         val channel = NotificationChannel(
             channelId, 
             channelName, 
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Notifications from the app"
+            description = "Thông báo từ ứng dụng"
             enableLights(true)
             enableVibration(true)
             setShowBadge(true)
         }
         notificationManager.createNotificationChannel(channel)
 
-        // Tạo intent để mở app khi click notification
+        // Tạo intent để mở ứng dụng khi nhấn thông báo
         val intent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            // Thêm extra để navigate đến NotificationScreen
+            // Thêm extra để điều hướng đến NotificationScreen
             putExtra("navigate_to", "notifications")
         }
         
@@ -111,15 +111,15 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(android.R.drawable.ic_dialog_info) // TODO: Thay bằng app icon
-            .setContentIntent(pendingIntent) // Click để mở app
-            .setAutoCancel(true) // Tự động dismiss khi click
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // Priority cao
-            .setDefaults(NotificationCompat.DEFAULT_ALL) // Sound, vibration, lights
-            .setStyle(NotificationCompat.BigTextStyle().bigText(body)) // Hiển thị text đầy đủ
+            .setSmallIcon(android.R.drawable.ic_dialog_info) // TODO: Thay bằng icon ứng dụng
+            .setContentIntent(pendingIntent) // Nhấn để mở ứng dụng
+            .setAutoCancel(true) // Tự động đóng khi nhấn
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // Mức độ ưu tiên cao
+            .setDefaults(NotificationCompat.DEFAULT_ALL) // Âm thanh, rung, đèn
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body)) // Hiển thị văn bản đầy đủ
             .build()
 
-        // Sử dụng timestamp làm notification ID để tránh overwrite
+        // Sử dụng timestamp làm ID thông báo để tránh ghi đè
         val notificationId = System.currentTimeMillis().toInt()
         notificationManager.notify(notificationId, notification)
         

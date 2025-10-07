@@ -29,7 +29,7 @@ class ServiceDetailRepository {
 
     suspend fun getServicesByType(serviceTypeId: Long): List<ServiceDetail> {
         return try {
-            println("=== FETCHING SERVICES BY TYPE ID: $serviceTypeId ===")
+            println("=== TẢI DỊCH VỤ THEO ID LOẠI: $serviceTypeId ===")
             
             val result = supabase.from("services")
                 .select {
@@ -39,17 +39,17 @@ class ServiceDetailRepository {
                 }
                 .decodeList<ServiceDetail>()
                 
-            println("Successfully fetched ${result.size} services")
+            println("Đã tải thành công ${result.size} dịch vụ")
             
-            // Debug: Print each service
+            // Debug: In ra từng dịch vụ
             result.forEachIndexed { index, service ->
-                println("Service ${index + 1}: id=${service.id}, name='${service.name}', description='${service.description}', duration=${service.durationMinutes}min")
+                println("Dịch vụ ${index + 1}: id=${service.id}, tên='${service.name}', mô tả='${service.description}', thời gian=${service.durationMinutes}phút")
             }
             
             result
             
         } catch (e: Exception) {
-            println("Error fetching services: ${e.message}")
+            println("Lỗi khi tải dịch vụ: ${e.message}")
             e.printStackTrace()
             emptyList()
         }

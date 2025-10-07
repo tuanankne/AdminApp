@@ -75,20 +75,20 @@ class OrderManagementViewModel : ViewModel() {
                     providerMap[service.providerId]
                 }
                 
-                println("=== DETAILED DEBUG INFO ===")
-                println("Booking ID: ${booking.id}")
-                println("Customer ID: ${booking.customerId}")
-                println("Provider Service ID in booking: ${booking.providerServiceId}")
-                println("Available provider services:")
+                println("=== THÔNG TIN DEBUG CHI TIẾT ===")
+                println("ID Đơn hàng: ${booking.id}")
+                println("ID Khách hàng: ${booking.customerId}")
+                println("ID Dịch vụ nhà cung cấp trong đơn hàng: ${booking.providerServiceId}")
+                println("Dịch vụ nhà cung cấp có sẵn:")
                 providerServices.forEach { ps ->
-                    println("  - ID: '${ps.id}' (${ps.id.javaClass.simpleName}) | Service ID: ${ps.serviceId} | Provider: ${ps.providerId} -> Service: ${ps.services.name}")
+                    println("  - ID: '${ps.id}' (${ps.id.javaClass.simpleName}) | ID Dịch vụ: ${ps.serviceId} | Nhà cung cấp: ${ps.providerId} -> Dịch vụ: ${ps.services.name}")
                 }
-                println("Looking for provider_services WHERE id = '${booking.providerServiceId}' (${booking.providerServiceId.javaClass.simpleName}) (FK constraint)")
-                println("Match found: ${providerService != null}")
-                println("Found provider service: ${providerService?.services?.name}")
-                println("Provider from service: ${provider?.name ?: provider?.email}")
-                println("Found customer: ${customer?.name ?: customer?.email}")
-                println("Found transaction: ${transaction?.paymentMethod}")
+                println("Tìm kiếm provider_services WHERE id = '${booking.providerServiceId}' (${booking.providerServiceId.javaClass.simpleName}) (ràng buộc FK)")
+                println("Tìm thấy khớp: ${providerService != null}")
+                println("Dịch vụ nhà cung cấp tìm thấy: ${providerService?.services?.name}")
+                println("Nhà cung cấp từ dịch vụ: ${provider?.name ?: provider?.email}")
+                println("Khách hàng tìm thấy: ${customer?.name ?: customer?.email}")
+                println("Giao dịch tìm thấy: ${transaction?.paymentMethod}")
                 
                 val orderDetail = OrderDetail(
                     booking = booking,

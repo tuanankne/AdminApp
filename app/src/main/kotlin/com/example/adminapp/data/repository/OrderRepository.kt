@@ -28,28 +28,28 @@ class OrderRepository {
                 .select()
                 .decodeList<Booking>()
                 
-            println("Successfully fetched ${result.size} bookings from database")
+            println("Đã tải thành công ${result.size} đơn hàng từ cơ sở dữ liệu")
             
-            // Debug: In ra tất cả booking để kiểm tra data
+            // Debug: In ra tất cả đơn hàng để kiểm tra dữ liệu
             if (result.isNotEmpty()) {
-                println("=== ALL BOOKINGS DEBUG ===")
+                println("=== DEBUG TẤT CẢ ĐƠN HÀNG ===")
                 result.forEachIndexed { index, booking ->
-                    println("Booking ${index + 1}: id=${booking.id}")
-                    println("  - Customer ID: ${booking.customerId}")
-                    println("  - Provider Service ID: ${booking.providerServiceId}")
-                    println("  - Status: ${booking.status}")
-                    println("  - Location: '${booking.location}'")
-                    println("  - Start: ${booking.startAt}")
-                    println("  - End: ${booking.endAt}")
-                    println("  - Workers: ${booking.numberWorkers}")
-                    println("  - Description: '${booking.description}'")
+                    println("Đơn hàng ${index + 1}: id=${booking.id}")
+                    println("  - ID Khách hàng: ${booking.customerId}")
+                    println("  - ID Dịch vụ nhà cung cấp: ${booking.providerServiceId}")
+                    println("  - Trạng thái: ${booking.status}")
+                    println("  - Vị trí: '${booking.location}'")
+                    println("  - Bắt đầu: ${booking.startAt}")
+                    println("  - Kết thúc: ${booking.endAt}")
+                    println("  - Số công nhân: ${booking.numberWorkers}")
+                    println("  - Mô tả: '${booking.description}'")
                     println("  ---")
                 }
             }
             
             result
         } catch (e: Exception) {
-            println("ERROR: ${e.message}")
+            println("LỖI: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -61,7 +61,7 @@ class OrderRepository {
                 .select()
                 .decodeList<Transaction>()
         } catch (e: Exception) {
-            println("Error fetching transactions: ${e.message}")
+            println("Lỗi khi tải giao dịch: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -69,7 +69,7 @@ class OrderRepository {
 
     suspend fun getCustomers(): List<User> {
         return try {
-            println("Fetching customers from database...")
+            println("Đang tải khách hàng từ cơ sở dữ liệu...")
             val result = supabase.from("users")
                 .select {
                     filter {
@@ -77,10 +77,10 @@ class OrderRepository {
                     }
                 }
                 .decodeList<User>()
-            println("Successfully fetched ${result.size} customers")
+            println("Đã tải thành công ${result.size} khách hàng")
             result
         } catch (e: Exception) {
-            println("Error fetching customers: ${e.message}")
+            println("Lỗi khi tải khách hàng: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -96,13 +96,13 @@ class OrderRepository {
                 }
                 .decodeList<User>()
         } catch (e: Exception) {
-            println("Error fetching providers: ${e.message}")
+            println("Lỗi khi tải nhà cung cấp: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
     }
 
-    // Temporary simple data classes for debugging
+    // Data class tạm thời để debug
     @kotlinx.serialization.Serializable
     data class SimpleProviderService(
         val id: Int,
@@ -119,31 +119,31 @@ class OrderRepository {
 
     suspend fun getProviderServices(): List<ProviderServiceDetail> {
         return try {
-            println("=== FETCHING PROVIDER SERVICES (SIMPLE) ===")
+            println("=== TẢI DỊCH VỤ NHÀ CUNG CẤP (ĐƠN GIẢN) ===")
             
-            // Step 1: Get raw provider_services
+            // Bước 1: Lấy dữ liệu thô provider_services
             val rawProviderServices = supabase.from("provider_services")
                 .select()
                 .decodeList<SimpleProviderService>()
                 
-            println("Raw provider services: ${rawProviderServices.size}")
+            println("Dịch vụ nhà cung cấp thô: ${rawProviderServices.size}")
             rawProviderServices.forEach { ps ->
-                println("  - ID: ${ps.id}, Service ID: ${ps.service_id}, Provider: ${ps.provider_id}")
+                println("  - ID: ${ps.id}, ID Dịch vụ: ${ps.service_id}, Nhà cung cấp: ${ps.provider_id}")
             }
             
-            // Step 2: Get services  
+            // Bước 2: Lấy dịch vụ  
             val services = supabase.from("services")
                 .select()
                 .decodeList<SimpleService>()
                 
-            println("Services: ${services.size}")
+            println("Dịch vụ: ${services.size}")
             val serviceMap = services.associateBy { it.id }
             
-            // Step 3: Manually combine data
+            // Bước 3: Kết hợp dữ liệu thủ công
             val result = rawProviderServices.mapNotNull { ps ->
                 val service = serviceMap[ps.service_id]
                 if (service != null) {
-                    // Create a minimal ProviderServiceDetail for testing
+                    // Tạo ProviderServiceDetail tối thiểu để test
                     try {
                         ProviderServiceDetail(
                             id = ps.id.toString(),
@@ -153,7 +153,7 @@ class OrderRepository {
                             services = Service(
                                 id = service.id.toString(),
                                 name = service.name,
-                                serviceTypeId = "1",  // Default for now
+                                serviceTypeId = "1",  // Mặc định tạm thời
                                 serviceTypes = ServiceType(
                                     id = 1L,
                                     name = "Default"
@@ -161,24 +161,24 @@ class OrderRepository {
                             )
                         )
                     } catch (e: Exception) {
-                        println("Error creating ProviderServiceDetail: ${e.message}")
+                        println("Lỗi khi tạo ProviderServiceDetail: ${e.message}")
                         null
                     }
                 } else {
-                    println("No service found for service_id: ${ps.service_id}")
+                    println("Không tìm thấy dịch vụ cho service_id: ${ps.service_id}")
                     null
                 }
             }
             
-            println("Combined result: ${result.size}")
+            println("Kết quả kết hợp: ${result.size}")
             result.forEach { ps ->
-                println("Final: id=${ps.id}, service=${ps.services.name}, provider=${ps.providerId}")
+                println("Cuối cùng: id=${ps.id}, dịch vụ=${ps.services.name}, nhà cung cấp=${ps.providerId}")
             }
             
             result
             
         } catch (e: Exception) {
-            println("ERROR fetching provider services: ${e.message}")
+            println("LỖI khi tải dịch vụ nhà cung cấp: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -186,7 +186,7 @@ class OrderRepository {
 
     suspend fun getProviderServices(providerId: String): List<SimpleProviderService> {
         return try {
-            println("=== FETCHING PROVIDER SERVICES FOR PROVIDER: $providerId ===")
+            println("=== TẢI DỊCH VỤ NHÀ CUNG CẤP CHO NHÀ CUNG CẤP: $providerId ===")
             
             val result = supabase.from("provider_services")
                 .select() {
@@ -196,10 +196,10 @@ class OrderRepository {
                 }
                 .decodeList<SimpleProviderService>()
                 
-            println("Found ${result.size} provider services for provider $providerId")
+            println("Tìm thấy ${result.size} dịch vụ nhà cung cấp cho nhà cung cấp $providerId")
             result
         } catch (e: Exception) {
-            println("Error fetching provider services: ${e.message}")
+            println("Lỗi khi tải dịch vụ nhà cung cấp: ${e.message}")
             e.printStackTrace()
             emptyList()
         }

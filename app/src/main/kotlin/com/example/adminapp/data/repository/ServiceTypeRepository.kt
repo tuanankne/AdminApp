@@ -31,33 +31,33 @@ class ServiceTypeRepository {
 
     suspend fun getServiceTypes(): List<ServiceType> {
         return try {
-            println("=== FETCHING SERVICE TYPES ===")
+            println("=== TẢI LOẠI DỊCH VỤ ===")
             
-            // First, try to get raw data to see actual structure
+            // Đầu tiên, thử lấy dữ liệu thô để xem cấu trúc thực tế
             val rawResult = supabase.from("service_types")
                 .select()
                 .decodeList<kotlinx.serialization.json.JsonObject>()
             
-            println("Raw data structure:")
+            println("Cấu trúc dữ liệu thô:")
             rawResult.forEachIndexed { index, obj ->
-                println("Row ${index + 1}: $obj")
+                println("Dòng ${index + 1}: $obj")
             }
             
             val result = supabase.from("service_types")
                 .select()
                 .decodeList<ServiceType>()
                 
-            println("Successfully fetched ${result.size} service types")
+            println("Đã tải thành công ${result.size} loại dịch vụ")
             
-            // Debug: Print each service type
+            // Debug: In ra từng loại dịch vụ
             result.forEachIndexed { index, serviceType ->
-                println("Service Type ${index + 1}: id=${serviceType.id}, name='${serviceType.name}', isActive=${serviceType.isActive}")
+                println("Loại dịch vụ ${index + 1}: id=${serviceType.id}, tên='${serviceType.name}', đang hoạt động=${serviceType.isActive}")
             }
             
             result
             
         } catch (e: Exception) {
-            println("Error fetching service types: ${e.message}")
+            println("Lỗi khi tải loại dịch vụ: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -65,8 +65,8 @@ class ServiceTypeRepository {
     
     suspend fun updateServiceTypeStatus(serviceTypeId: Long, isActive: Boolean): Boolean {
         return try {
-            println("=== UPDATING SERVICE TYPE STATUS ===")
-            println("Service Type ID: $serviceTypeId, Is Active: $isActive")
+            println("=== CẬP NHẬT TRẠNG THÁI LOẠI DỊCH VỤ ===")
+            println("ID Loại dịch vụ: $serviceTypeId, Đang hoạt động: $isActive")
             
             val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             

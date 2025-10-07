@@ -18,7 +18,7 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository {
 
-    // Data class tạm để deserialize dữ liệu từ Supabase
+    // Data class tạm thời để deserialize dữ liệu từ Supabase
     @Serializable
     data class ProviderServiceRow(
         val id: Int,
@@ -127,7 +127,7 @@ class AuthRepository {
         return try {
             println("=== CALCULATING AVERAGE RATING FOR PROVIDER: $providerId ===")
             
-            // 1. Lấy tất cả provider_service_id của provider này
+            // 1. Lấy tất cả provider_service_id của nhà cung cấp này
             val providerServices = supabase.from("provider_services")
                 .select(columns = Columns.list("id")) {
                     filter {
@@ -137,16 +137,16 @@ class AuthRepository {
                 .decodeList<Map<String, Int>>()
             
             if (providerServices.isEmpty()) {
-                println("Provider has no services")
+                println("Nhà cung cấp không có dịch vụ nào")
                 return null
             }
             
             val providerServiceIds = providerServices.map { it["id"]!! }
             println("Found ${providerServiceIds.size} provider services: $providerServiceIds")
             
-            // 2. Lấy tất cả ratings cho các provider_service_id này
+            // 2. Lấy tất cả đánh giá cho các provider_service_id này
             val ratings = if (providerServiceIds.size == 1) {
-                // Nếu chỉ có 1 service, dùng eq
+                // Nếu chỉ có 1 dịch vụ, dùng eq
                 supabase.from("service_ratings")
                     .select(columns = Columns.list("rating")) {
                         filter {
@@ -155,7 +155,7 @@ class AuthRepository {
                     }
                     .decodeList<Map<String, Int>>()
             } else {
-                // Nếu có nhiều services, dùng or với nhiều eq
+                // Nếu có nhiều dịch vụ, dùng or với nhiều eq
                 supabase.from("service_ratings")
                     .select(columns = Columns.list("rating")) {
                         filter {
@@ -170,7 +170,7 @@ class AuthRepository {
             }
             
             if (ratings.isEmpty()) {
-                println("No ratings found for this provider")
+                println("Không tìm thấy đánh giá nào cho nhà cung cấp này")
                 return null
             }
             
@@ -309,7 +309,7 @@ class AuthRepository {
                 }
                 .decodeList<Provider>()
         } catch (e: Exception) {
-            println("Error fetching providers: ${e.message}")
+            println("Lỗi khi tải nhà cung cấp: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -325,7 +325,7 @@ class AuthRepository {
                 }
                 .decodeList<Provider>()
         } catch (e: Exception) {
-            println("Error fetching customers: ${e.message}")
+            println("Lỗi khi tải khách hàng: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -341,7 +341,7 @@ class AuthRepository {
                 }
             true
         } catch (e: Exception) {
-            println("Error deleting user: ${e.message}")
+            println("Lỗi khi xóa người dùng: ${e.message}")
             e.printStackTrace()
             false
         }
@@ -359,7 +359,7 @@ class AuthRepository {
                 .decodeList<Provider>()
             customers.firstOrNull()
         } catch (e: Exception) {
-            println("Error fetching customer: ${e.message}")
+            println("Lỗi khi tải khách hàng: ${e.message}")
             e.printStackTrace()
             null
         }

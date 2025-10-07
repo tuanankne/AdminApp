@@ -31,7 +31,7 @@ class CustomerDetailViewModel : ViewModel() {
                 isLoading = true
                 error = null
 
-                // Load customer info
+                // Tải thông tin khách hàng
                 val customerData = authRepository.fetchCustomerById(customerId)
                 customer = customerData
 
@@ -54,7 +54,7 @@ class CustomerDetailViewModel : ViewModel() {
                 val success = authRepository.updateUserLockStatus(currentCustomer.id, newStatus)
 
                 if (success) {
-                    // Refresh customer data
+                    // Làm mới dữ liệu khách hàng
                     val updatedCustomer = authRepository.fetchCustomerById(currentCustomer.id)
                     customer = updatedCustomer
                 } else {

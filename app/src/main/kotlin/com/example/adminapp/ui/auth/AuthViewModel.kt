@@ -17,10 +17,7 @@ import com.example.adminapp.data.repository.AuthRepository
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.auth.auth
 
-
-
 class AuthViewModel : ViewModel() {
-
     private val authRepository = AuthRepository()
     
     var isLoading by mutableStateOf(false)
@@ -30,7 +27,7 @@ class AuthViewModel : ViewModel() {
     var isSignUpSuccess by mutableStateOf<Boolean?>(null)
         private set
 
-    suspend fun countUsersByEmail(email: String): Int = authRepository.countAdminUsersByEmail(email);
+    suspend fun countUsersByEmail(email: String): Int = authRepository.countAdminUsersByEmail(email)
 
     fun signIn(email: String, password: String, context: Context,onSuccess: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -45,12 +42,9 @@ class AuthViewModel : ViewModel() {
                         putString("username", userName)
                     }
 
-                    // Generate and upload FCM token for push notifications
+                    // Tạo và upload FCM token cho push notifications
                     withContext(Dispatchers.Main) {
                         authRepository.uploadFcmToken(context, userId)
-                    }
-
-                    withContext(Dispatchers.Main) {
                         onSuccess()
                     }
                 }else{
@@ -86,7 +80,7 @@ class AuthViewModel : ViewModel() {
                         address = address,
                         name = name,
                         phoneNumber = phoneNumber,
-                        lock = "active" // Thêm lock khi đăng ký
+                        lock = "active" // Thêm trạng thái khóa khi đăng ký
                     )
                     authRepository.signUpAdmin(newUser)
                     withContext(Dispatchers.Main) {
@@ -120,7 +114,7 @@ class AuthViewModel : ViewModel() {
             try {
                 Log.d("AuthViewModel", "Starting logout process...")
                 
-                // 1. Lấy thông tin user trước khi xóa SharedPreferences
+                // 1. Lấy thông tin người dùng trước khi xóa SharedPreferences
                 val sharedPref = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
                 val userId = sharedPref.getString("user_id", null)
                 
@@ -136,7 +130,7 @@ class AuthViewModel : ViewModel() {
                         Log.d("AuthViewModel", "FCM tokens deleted for user: $userId")
                     } catch (e: Exception) {
                         Log.w("AuthViewModel", "Could not delete FCM tokens: ${e.message}")
-                        // Không throw error vì việc này không quan trọng lắm
+                        // Không ném lỗi vì việc này không quan trọng lắm
                     }
                 }
                 
@@ -154,7 +148,7 @@ class AuthViewModel : ViewModel() {
                     Log.d("AuthViewModel", "Supabase session cleared")
                 } catch (e: Exception) {
                     Log.w("AuthViewModel", "Could not clear Supabase session: ${e.message}")
-                    // Tiếp tục logout dù có lỗi
+                    // Tiếp tục đăng xuất dù có lỗi
                 }
                 
                 // 5. Reset các state variables
@@ -170,7 +164,7 @@ class AuthViewModel : ViewModel() {
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Error during logout: ${e.message}", e)
                 
-                // Ngay cả khi có lỗi, vẫn cố gắng xóa SharedPreferences và navigate
+                // Ngay cả khi có lỗi, vẫn cố gắng xóa SharedPreferences và điều hướng
                 withContext(Dispatchers.Main) {
                     try {
                         val sharedPref = context.getSharedPreferences("user_session", Context.MODE_PRIVATE)
