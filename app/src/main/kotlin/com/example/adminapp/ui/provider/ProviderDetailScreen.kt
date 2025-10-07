@@ -34,7 +34,8 @@ fun ProviderDetailScreen(
     error: String?,
     onBack: () -> Unit,
     isUpdatingLock: Boolean = false,
-    onToggleLock: () -> Unit = {}
+    onToggleLock: () -> Unit = {},
+    onViewOrders: (String) -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -51,6 +52,21 @@ fun ProviderDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Quay lại"
                         )
+                    }
+                },
+                actions = {
+                    if (provider != null) {
+                        IconButton(
+                            onClick = { 
+                                onViewOrders(provider.id)
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Receipt,
+                                contentDescription = "Xem đơn hàng",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             )
@@ -278,6 +294,24 @@ private fun ProviderInfoCard(provider: Provider) {
                 label = "Mật khẩu",
                 value = "••••••••"
             )
+            
+            // PayPal Email (if available)
+            provider.paypal_email?.let { paypalEmail ->
+                InfoRow(
+                    icon = Icons.Default.Payment,
+                    label = "PayPal Email",
+                    value = paypalEmail
+                )
+            }
+            
+            // Rating (if available)
+            provider.averageRating?.let { rating ->
+                InfoRow(
+                    icon = Icons.Default.Star,
+                    label = "Điểm đánh giá",
+                    value = String.format("%.1f/5.0", rating)
+                )
+            }
         }
     }
 }

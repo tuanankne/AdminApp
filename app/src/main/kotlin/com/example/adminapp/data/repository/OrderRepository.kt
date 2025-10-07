@@ -184,6 +184,27 @@ class OrderRepository {
         }
     }
 
+    suspend fun getProviderServices(providerId: String): List<SimpleProviderService> {
+        return try {
+            println("=== FETCHING PROVIDER SERVICES FOR PROVIDER: $providerId ===")
+            
+            val result = supabase.from("provider_services")
+                .select() {
+                    filter {
+                        eq("provider_id", providerId)
+                    }
+                }
+                .decodeList<SimpleProviderService>()
+                
+            println("Found ${result.size} provider services for provider $providerId")
+            result
+        } catch (e: Exception) {
+            println("Error fetching provider services: ${e.message}")
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
     suspend fun getProviderByServiceId(serviceId: String): User? {
         return try {
             println("=== FETCHING PROVIDER BY SERVICE ID: $serviceId ===")

@@ -166,6 +166,19 @@ fun AppNavigation(initialRoute: String? = null) {
             )
         }
         
+        composable("order_management?providerId={providerId}") { backStackEntry ->
+            val providerId = backStackEntry.arguments?.getString("providerId")
+            OrderListScreen(
+                providerId = providerId,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onOrderClick = { orderId ->
+                    navController.navigate("order_detail/$orderId")
+                }
+            )
+        }
+        
         composable("order_detail/{orderId}") { backStackEntry ->
             val orderId = backStackEntry.arguments?.getString("orderId")?.toLongOrNull() ?: 0L
             OrderManagementScreen(
@@ -260,6 +273,9 @@ fun AppNavigation(initialRoute: String? = null) {
                 isUpdatingLock = providerDetailViewModel.isUpdatingLock,
                 onToggleLock = {
                     providerDetailViewModel.toggleLockStatus()
+                },
+                onViewOrders = { providerId ->
+                    navController.navigate("order_management?providerId=$providerId")
                 }
             )
         }

@@ -22,5 +22,9 @@ data class Provider(
     @SerialName("role")
     val role: String? = null,
     @SerialName("lock")
-    val lock: String? = "active"
+    val lock: String? = "active",
+    @SerialName("paypal_email")
+    val paypal_email: String? = null,
+    @SerialName("average_rating")
+    val averageRating: Double? = null
 )

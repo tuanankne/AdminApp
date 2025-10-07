@@ -109,9 +109,80 @@ class AuthRepository {
                     }
                 }
                 .decodeList<Provider>()
-            providers.firstOrNull()
+            val provider = providers.firstOrNull()
+            
+            // Tính toán điểm đánh giá trung bình
+            provider?.let { p ->
+                val averageRating = calculateProviderAverageRating(providerId)
+                p.copy(averageRating = averageRating)
+            } ?: provider
         } catch (e: Exception) {
             println("Error fetching provider: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+    
+    private suspend fun calculateProviderAverageRating(providerId: String): Double? {
+        return try {
+            println("=== CALCULATING AVERAGE RATING FOR PROVIDER: $providerId ===")
+            
+            // 1. Lấy tất cả provider_service_id của provider này
+            val providerServices = supabase.from("provider_services")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("provider_id", providerId)
+                    }
+                }
+                .decodeList<Map<String, Int>>()
+            
+            if (providerServices.isEmpty()) {
+                println("Provider has no services")
+                return null
+            }
+            
+            val providerServiceIds = providerServices.map { it["id"]!! }
+            println("Found ${providerServiceIds.size} provider services: $providerServiceIds")
+            
+            // 2. Lấy tất cả ratings cho các provider_service_id này
+            val ratings = if (providerServiceIds.size == 1) {
+                // Nếu chỉ có 1 service, dùng eq
+                supabase.from("service_ratings")
+                    .select(columns = Columns.list("rating")) {
+                        filter {
+                            eq("provider_service_id", providerServiceIds[0])
+                        }
+                    }
+                    .decodeList<Map<String, Int>>()
+            } else {
+                // Nếu có nhiều services, dùng or với nhiều eq
+                supabase.from("service_ratings")
+                    .select(columns = Columns.list("rating")) {
+                        filter {
+                            or {
+                                providerServiceIds.forEach { serviceId ->
+                                    eq("provider_service_id", serviceId)
+                                }
+                            }
+                        }
+                    }
+                    .decodeList<Map<String, Int>>()
+            }
+            
+            if (ratings.isEmpty()) {
+                println("No ratings found for this provider")
+                return null
+            }
+            
+            val ratingValues = ratings.map { it["rating"]!! }
+            val averageRating = ratingValues.average()
+            
+            println("Found ${ratingValues.size} ratings: $ratingValues")
+            println("Average rating: $averageRating")
+            
+            averageRating
+        } catch (e: Exception) {
+            println("Error calculating average rating: ${e.message}")
             e.printStackTrace()
             null
         }
