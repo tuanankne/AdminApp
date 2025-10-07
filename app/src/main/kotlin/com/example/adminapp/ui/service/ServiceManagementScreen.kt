@@ -40,6 +40,7 @@ fun ServiceManagementScreen(
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var selectedServiceType by remember { mutableStateOf<ServiceType?>(null) }
     val context = LocalContext.current
     
@@ -163,7 +164,8 @@ fun ServiceManagementScreen(
                                 },
                                 isUpdating = viewModel.isUpdatingStatus,
                                 onClick = { onServiceTypeClick(serviceType.id, serviceType.name) },
-                                onDelete = { showDeleteDialog = true; selectedServiceType = serviceType }
+                                onDelete = { showDeleteDialog = true; selectedServiceType = serviceType },
+                                onEdit = { showEditDialog = true; selectedServiceType = serviceType }
                             )
                         }
                         
@@ -183,6 +185,26 @@ fun ServiceManagementScreen(
             onAdd = { name, description, imageStream, fileName ->
                 viewModel.addServiceType(name, description, imageStream, fileName)
                 showAddDialog = false
+            },
+            isLoading = viewModel.isAddingService || viewModel.isUploadingImage,
+            context = context
+        )
+    }
+    
+    if (showEditDialog && selectedServiceType != null) {
+        EditServiceTypeDialog(
+            serviceType = selectedServiceType!!,
+            onDismiss = { showEditDialog = false; selectedServiceType = null },
+            onUpdate = { name, description, imageStream, fileName ->
+                viewModel.updateServiceType(
+                    serviceTypeId = selectedServiceType!!.id,
+                    name = name,
+                    description = description,
+                    imageInputStream = imageStream,
+                    fileName = fileName
+                )
+                showEditDialog = false
+                selectedServiceType = null
             },
             isLoading = viewModel.isAddingService || viewModel.isUploadingImage,
             context = context
@@ -232,7 +254,8 @@ private fun ServiceTypeCard(
     onToggleStatus: (Long, Boolean) -> Unit,
     isUpdating: Boolean,
     onClick: () -> Unit = {},
-    onDelete: () -> Unit = {}
+    onDelete: () -> Unit = {},
+    onEdit: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -344,6 +367,19 @@ private fun ServiceTypeCard(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
+                    DropdownMenuItem(
+                        text = { Text("Sửa") },
+                        onClick = {
+                            showMenu = false
+                            onEdit()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Edit, 
+                                contentDescription = null
+                            )
+                        }
+                    )
                     DropdownMenuItem(
                         text = { Text("Xóa") },
                         onClick = {
@@ -487,6 +523,150 @@ private fun AddServiceTypeDialog(
                 enabled = !isLoading && name.isNotBlank()
             ) {
                 Text("Thêm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Hủy")
+            }
+        }
+    )
+}
+
+@Composable
+private fun EditServiceTypeDialog(
+    serviceType: ServiceType,
+    onDismiss: () -> Unit,
+    onUpdate: (String, String, InputStream?, String?) -> Unit,
+    isLoading: Boolean,
+    context: Context
+) {
+    var name by remember { mutableStateOf(serviceType.name) }
+    var description by remember { mutableStateOf(serviceType.description ?: "") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        selectedImageUri = uri
+    }
+    
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        title = { Text("Sửa loại dịch vụ") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Tên loại dịch vụ") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading,
+                    singleLine = true
+                )
+                
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Mô tả") },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading,
+                    minLines = 3
+                )
+                
+                // Image Selection
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    onClick = { 
+                        if (!isLoading) {
+                            imagePickerLauncher.launch("image/*")
+                        }
+                    }
+                ) {
+                    if (selectedImageUri != null) {
+                        AsyncImage(
+                            model = selectedImageUri,
+                            contentDescription = "Selected image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (!serviceType.iconUrl.isNullOrEmpty()) {
+                        AsyncImage(
+                            model = serviceType.iconUrl,
+                            contentDescription = "Current image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AddPhotoAlternate,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Chọn hình ảnh mới",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                if (isLoading) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Đang cập nhật loại dịch vụ...",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val inputStream = selectedImageUri?.let { uri ->
+                        try {
+                            context.contentResolver.openInputStream(uri)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    val fileName = selectedImageUri?.let { uri ->
+                        val uuid1 = java.util.UUID.randomUUID().toString()
+                        val uuid2 = java.util.UUID.randomUUID().toString()
+                        "${uuid1}_${uuid2}.jpg"
+                    }
+                    onUpdate(name, description, inputStream, fileName)
+                },
+                enabled = !isLoading && name.isNotBlank()
+            ) {
+                Text("Cập nhật")
             }
         },
         dismissButton = {
