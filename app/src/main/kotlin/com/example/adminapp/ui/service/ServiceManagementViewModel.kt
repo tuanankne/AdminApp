@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.adminapp.data.model.ServiceType
 import com.example.adminapp.data.repository.ServiceTypeRepository
+import com.example.adminapp.core.supabase
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
@@ -118,6 +120,43 @@ class ServiceManagementViewModel : ViewModel() {
     
     fun clearError() {
         error = null
+    }
+    
+    fun initializeStorageBuckets() {
+        viewModelScope.launch {
+            try {
+                println("=== INITIALIZING STORAGE BUCKETS ===")
+                
+                // Tạo các bucket cần thiết
+                val buckets = listOf(
+                    "servicetype" to "Service Type Icons",
+                    "report-images" to "Report Images",
+                    "user-avatars" to "User Avatars"
+                )
+                
+                buckets.forEach { (bucketId, bucketName) ->
+                    try {
+                        println("Creating bucket: $bucketId")
+                        supabase.storage.createBucket(
+                            id = bucketId
+                        )
+                        println("✅ Bucket '$bucketId' created successfully")
+                    } catch (e: Exception) {
+                        if (e.message?.contains("already exists") == true) {
+                            println("ℹ️ Bucket '$bucketId' already exists")
+                        } else {
+                            println("❌ Error creating bucket '$bucketId': ${e.message}")
+                        }
+                    }
+                }
+                
+                println("=== STORAGE BUCKETS INITIALIZATION COMPLETED ===")
+                
+            } catch (e: Exception) {
+                println("❌ Error initializing storage buckets: ${e.message}")
+                e.printStackTrace()
+            }
+        }
     }
     
     fun createSampleData() {

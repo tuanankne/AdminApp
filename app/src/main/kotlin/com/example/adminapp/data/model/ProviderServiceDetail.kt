@@ -40,5 +40,9 @@ data class ServiceType(
     @SerialName("icon_url")
     val iconUrl: String? = null,
     @SerialName("is_active")
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    @SerialName("created_at")
+    val createdAt: String? = null,
+    @SerialName("updated_at")
+    val updatedAt: String? = null
 )

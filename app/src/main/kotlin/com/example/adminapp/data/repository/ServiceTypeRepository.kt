@@ -7,8 +7,27 @@ import io.github.jan.supabase.storage.storage
 import io.github.jan.supabase.storage.upload
 import kotlinx.serialization.json.JsonObject
 import java.io.InputStream
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlin.random.Random
 
 class ServiceTypeRepository {
+
+    private suspend fun getMaxServiceTypeId(): Long {
+        return try {
+            // Lấy tất cả service types và tìm max ID
+            val serviceTypes = supabase.from("service_types")
+                .select()
+                .decodeList<ServiceType>()
+            
+            val maxId = serviceTypes.maxOfOrNull { it.id } ?: 0L
+            println("Max ID found: $maxId")
+            maxId
+        } catch (e: Exception) {
+            println("Error getting max ID, using 0: ${e.message}")
+            0L
+        }
+    }
 
     suspend fun getServiceTypes(): List<ServiceType> {
         return try {
@@ -49,9 +68,14 @@ class ServiceTypeRepository {
             println("=== UPDATING SERVICE TYPE STATUS ===")
             println("Service Type ID: $serviceTypeId, Is Active: $isActive")
             
+            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            
             supabase.from("service_types")
                 .update(
-                    mapOf("is_active" to isActive)
+                    mapOf(
+                        "is_active" to isActive.toString(),
+                        "updated_at" to currentTime
+                    )
                 ) {
                     filter {
                         eq("id", serviceTypeId)
@@ -78,9 +102,18 @@ class ServiceTypeRepository {
             println("=== ADDING NEW SERVICE TYPE ===")
             println("Name: $name, Description: $description, Icon: $iconUrl, Is Active: $isActive")
             
-            val insertData = mutableMapOf<String, Any>(
+            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            
+            // Lấy ID lớn nhất hiện có + 1
+            val maxId = getMaxServiceTypeId()
+            val id = maxId + 1
+            
+            val insertData = mutableMapOf<String, String>(
+                "id" to id.toString(),                     // ID tự động tạo
                 "name" to name,
-                "is_active" to isActive
+                "is_active" to isActive.toString(),
+                "created_at" to currentTime,    // Thời gian tạo = thời gian hiện tại
+                "updated_at" to currentTime      // Thời gian cập nhật = thời gian hiện tại (khi tạo mới)
             )
             
             description?.let { insertData["description"] = it }
@@ -104,15 +137,46 @@ class ServiceTypeRepository {
             println("=== UPLOADING IMAGE ===")
             println("File name: $fileName")
             
-            val bucket = supabase.storage["service-icons"]
-            val path = "icons/$fileName"
+            // Tạo tên file với UUID để tránh trùng lặp
+            val uuid1 = java.util.UUID.randomUUID().toString()
+            val uuid2 = java.util.UUID.randomUUID().toString()
+            val fileExtension = fileName.substringAfterLast(".", "jpg")
+            val newFileName = "${uuid1}_${uuid2}.${fileExtension}"
             
-            bucket.upload(path, inputStream.readBytes())
-            
-            val publicUrl = bucket.publicUrl(path)
-            println("Image uploaded successfully: $publicUrl")
-            
-            publicUrl
+            // Đảm bảo bucket tồn tại trước khi upload
+            try {
+                val bucket = supabase.storage["servicetype"]
+                val path = newFileName
+                
+                bucket.upload(path, inputStream.readBytes())
+                
+                val publicUrl = bucket.publicUrl(path)
+                println("Image uploaded successfully: $publicUrl")
+                
+                publicUrl
+            } catch (e: Exception) {
+                if (e.message?.contains("Bucket not found") == true) {
+                    println("Bucket 'servicetype' not found, creating it...")
+                    // Tạo bucket nếu chưa tồn tại
+                    supabase.storage.createBucket(
+                        id = "servicetype"
+                    )
+                    println("Bucket 'servicetype' created, retrying upload...")
+                    
+                    // Thử upload lại
+                    val bucket = supabase.storage["servicetype"]
+                    val path = newFileName
+                    
+                    bucket.upload(path, inputStream.readBytes())
+                    
+                    val publicUrl = bucket.publicUrl(path)
+                    println("Image uploaded successfully after bucket creation: $publicUrl")
+                    
+                    publicUrl
+                } else {
+                    throw e
+                }
+            }
             
         } catch (e: Exception) {
             println("Error uploading image: ${e.message}")
@@ -126,21 +190,35 @@ class ServiceTypeRepository {
         return try {
             println("=== CREATING SAMPLE SERVICE TYPES ===")
             
+            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            
+            // Lấy ID lớn nhất hiện có
+            val maxId = getMaxServiceTypeId()
+            
             val sampleTypes = listOf(
                 mapOf(
+                    "id" to (maxId + 1).toString(),  // ID tự động tạo
                     "name" to "Dọn dẹp nhà cửa",
                     "icon_url" to null,
-                    "is_active" to true
+                    "is_active" to "true",
+                    "created_at" to currentTime,    // Thời gian tạo = thời gian hiện tại
+                    "updated_at" to currentTime     // Thời gian cập nhật = thời gian hiện tại (khi tạo mới)
                 ),
                 mapOf(
+                    "id" to (maxId + 2).toString(),  // ID tự động tạo
                     "name" to "Sửa chữa điện nước",
                     "icon_url" to null,
-                    "is_active" to true
+                    "is_active" to "true",
+                    "created_at" to currentTime,
+                    "updated_at" to currentTime
                 ),
                 mapOf(
+                    "id" to (maxId + 3).toString(),  // ID tự động tạo
                     "name" to "Vệ sinh máy lạnh",
                     "icon_url" to null,
-                    "is_active" to true
+                    "is_active" to "true",
+                    "created_at" to currentTime,
+                    "updated_at" to currentTime
                 )
             )
             
@@ -170,7 +248,12 @@ class ServiceTypeRepository {
             println("=== UPDATING SERVICE TYPE ===")
             println("ID: $serviceTypeId, Name: $name, Description: $description, Icon: $iconUrl")
             
-            val updateData = mutableMapOf<String, Any>("name" to name)
+            val currentTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            
+            val updateData = mutableMapOf<String, String>(
+                "name" to name,
+                "updated_at" to currentTime
+            )
             
             // Add description if not null
             description?.let { updateData["description"] = it }

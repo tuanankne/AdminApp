@@ -42,6 +42,11 @@ fun ServiceManagementScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedServiceType by remember { mutableStateOf<ServiceType?>(null) }
     val context = LocalContext.current
+    
+    // Khởi tạo storage buckets khi screen được load
+    LaunchedEffect(Unit) {
+        viewModel.initializeStorageBuckets()
+    }
 
     Scaffold(
         topBar = {
@@ -473,7 +478,9 @@ private fun AddServiceTypeDialog(
                         }
                     }
                     val fileName = selectedImageUri?.let { uri ->
-                        "service_icon_${System.currentTimeMillis()}.jpg"
+                        val uuid1 = java.util.UUID.randomUUID().toString()
+                        val uuid2 = java.util.UUID.randomUUID().toString()
+                        "${uuid1}_${uuid2}.jpg"
                     }
                     onAdd(name, description, inputStream, fileName)
                 },

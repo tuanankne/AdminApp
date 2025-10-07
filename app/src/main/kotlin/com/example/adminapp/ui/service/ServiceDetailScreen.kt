@@ -544,7 +544,21 @@ private fun AddServiceDialog(
                         }
                     }
                     val fileName = selectedImageUri?.let { uri ->
-                        "service_${System.currentTimeMillis()}.jpg"
+                        val uuid1 = java.util.UUID.randomUUID().toString()
+                        val uuid2 = java.util.UUID.randomUUID().toString()
+                        // Try to get file extension from URI, fallback to jpg
+                        val fileExtension = try {
+                            val uriString = uri.toString()
+                            val extension = uriString.substringAfterLast(".", "")
+                            if (extension.isNotEmpty() && extension.length <= 4) {
+                                extension
+                            } else {
+                                "jpg"
+                            }
+                        } catch (e: Exception) {
+                            "jpg"
+                        }
+                        "${uuid1}_${uuid2}.${fileExtension}"
                     }
                     onAdd(name, description, durationInt, inputStream, fileName)
                 },
